@@ -136,3 +136,7 @@ crashlytics-build.properties
 
 # Auto-generated cache in Assets folder
 /[Aa]ssets/[Ss]ceneDependencyCache*
+
+# Assets/Tool: share the folder structure, ignore files added inside leaf folders
+/Assets/Tool/*/*/*
+!/Assets/Tool/*/*/.gitkeep
