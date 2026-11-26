@@ -2,10 +2,13 @@ using DG.Tweening;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 /// <summary>
 /// タイトル画面のスマホ（仕様書 v0.2 の4-1、デモの toTitle / startFromTitle / ドラッグ処理を移植）。
 /// スマホが画面の下から上3/5だけのぞき、上にドラッグ（または ↑ / Enter / Space）すると中央へ上がって InGame へ進む。
+/// 真ん中まで上がったら、ロック画面の中身が上に抜けて消え（ロックを開けた感じ）、黒いフェードを挟まずに InGame へつなぐ。
+/// InGame のスマホは同じ位置・同じ大きさなので、そのまま続いて見える。
 /// InGame に入るときに新しいゲームになる（暗証番号の抽選・進行状況のリセット）。
 /// スマホの画像（RectTransform。アンカーと中心は画面の真ん中）に付ける。ドラッグを受けるので Image の Raycast Target をオンにしておく
 /// </summary>
@@ -30,11 +33,18 @@ public class TitleController : MonoBehaviour, IPointerDownHandler, IDragHandler,
     [Header("参照")]
     [SerializeField] private CanvasGroup _logo;
 
+    [Header("ロック画面（スマホの画面。空なら子の Screen を使う）")]
+    [SerializeField] private RectTransform _lockScreen;
+
     [Header("演出の秒数（デモと同じ値）")]
     [SerializeField] private float _enterDuration = 1.1f;
     [SerializeField] private float _riseDuration = 0.64f;
     [SerializeField] private float _returnDuration = 0.42f;
     [SerializeField] private float _unlockDelay = 0.38f;
+
+    [Header("ロックを開ける演出（中身が上に抜けて消える）")]
+    [SerializeField] private float _unlockDuration = 0.35f;
+    [SerializeField] private float _unlockLift = 120f;
 
     private RectTransform _phone;
     private Canvas _canvas;
@@ -52,6 +62,11 @@ public class TitleController : MonoBehaviour, IPointerDownHandler, IDragHandler,
     {
         _phone = GetComponent<RectTransform>();
         _canvas = GetComponentInParent<Canvas>();
+
+        if (_lockScreen == null)
+        {
+            _lockScreen = _phone.Find("Screen") as RectTransform;
+        }
     }
 
     /// <summary>
@@ -158,17 +173,44 @@ public class TitleController : MonoBehaviour, IPointerDownHandler, IDragHandler,
         _isDragging = false;
         MoveTo(0f, _riseDuration, () =>
         {
-            DOVirtual.DelayedCall(_unlockDelay, GoToInGame).SetLink(gameObject);
+            DOVirtual.DelayedCall(_unlockDelay, Unlock).SetLink(gameObject);
         });
     }
 
     /// <summary>
-    /// 新しいゲームとして InGame へ切り替える（抽選は InGame に入ったところで行われる）
+    /// ロックを開ける：画面の中身（時刻・通知・案内）を上にずらしながら消し、終わったら InGame へ
+    /// </summary>
+    private void Unlock()
+    {
+        if (_lockScreen == null)
+        {
+            GoToInGame();
+            return;
+        }
+
+        Sequence sequence = DOTween.Sequence().SetLink(gameObject);
+
+        foreach (RectTransform child in _lockScreen)
+        {
+            sequence.Join(child.DOAnchorPosY(child.anchoredPosition.y + _unlockLift, _unlockDuration).SetEase(Ease.InCubic));
+
+            foreach (Graphic graphic in child.GetComponentsInChildren<Graphic>())
+            {
+                sequence.Join(graphic.DOFade(0f, _unlockDuration).SetEase(Ease.InCubic));
+            }
+        }
+
+        sequence.OnComplete(GoToInGame);
+    }
+
+    /// <summary>
+    /// 新しいゲームとして InGame へ切り替える（抽選は InGame に入ったところで行われる）。
+    /// スマホを開けたようにつなげたいので、黒いフェードは挟まない
     /// </summary>
     private void GoToInGame()
     {
         GameProgress.RequestNewGame();
-        SceneController.Load(GameScene.InGame);
+        SceneController.LoadWithoutFade(GameScene.InGame);
     }
 
     /// <summary>

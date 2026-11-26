@@ -65,6 +65,20 @@ public class SceneController : MonoBehaviour
     }
 
     /// <summary>
+    /// 黒いフェードを挟まずにシーンを切り替える（Title から InGame へ、スマホを開けたようにつなぐときに使う）
+    /// </summary>
+    public static void LoadWithoutFade(GameScene nextScene)
+    {
+        if (_instance != null)
+        {
+            _instance.SceneTransition(nextScene, false);
+            return;
+        }
+
+        SceneManager.LoadScene(nextScene.ToString());
+    }
+
+    /// <summary>
     /// シーンを切り替える（切り替えの途中なら何もしない）
     /// </summary>
     public void SceneTransition(GameScene nextScene, bool useFade)
