@@ -11,9 +11,8 @@ public class ResultScene : MonoBehaviour
         ShowResult();
     }
 
-
     private void ShowResult()
     {
-        _clearCountText.text = "clearCout:" + _clearCounter.GetClearCount().ToString();
+        _clearCountText.text = $"You were player #{_clearCounter.GetClearCount()} to finish!";
     }
 }
