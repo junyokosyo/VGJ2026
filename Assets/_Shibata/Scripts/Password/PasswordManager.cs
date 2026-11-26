@@ -95,7 +95,8 @@ public class PasswordManager : MonoBehaviour
         }
         else if (instance != this)
         {
-            Destroy(gameObject); 
+            Destroy(gameObject);
+            return;
         }
 
         _puzzleType = PuzzleType.Lock;

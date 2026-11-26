@@ -20,8 +20,8 @@ public class PasswordChecker
                 {
                     UnityEngine.Debug.Log("Clear");
                     PasswordManager.Instance.ChangeType(PuzzleType.Picture);
-                    PasswordManager.Instance.SetCorrect(PasswordManager.Instance.PicturrePassword.Correct);
                     PasswordManager.Instance.InstancePassword();
+                    PasswordManager.Instance.SetCorrect(PasswordManager.Instance.PicturrePassword.Correct);
                     OnReset?.Invoke();
                 }
                 else OnReset?.Invoke();
