@@ -1,10 +1,8 @@
 using System.Collections;
-using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-
 
 public class SceneController : MonoBehaviour
 {
@@ -12,31 +10,41 @@ public class SceneController : MonoBehaviour
     [SerializeField] private Image _fadeImage;
     [Header("フェードが完了する秒数")]
     [SerializeField] private float _fadeDuration = 1.0f;
+
     private Scene _currentScene = Scene.Title;
 
+    private bool _isTransitioning = false;
+
     private static SceneController _instance;
-    void Start()
+    public static SceneController Instance => _instance;
+
+    public bool IsTransitioning => _isTransitioning;
+
+    private void Awake()
     {
-        if(_instance == null)
-        {
-            _instance = this;
-        }
-        else
+        if (_instance != null && _instance != this)
         {
             Destroy(gameObject);
+            return;
         }
+
+        _instance = this;
+        DontDestroyOnLoad(gameObject);
     }
 
     private void Update()
     {
-        if (Keyboard.current.aKey.wasPressedThisFrame)
+#if UNITY_EDITOR
+        if (Keyboard.current != null && Keyboard.current.aKey.wasPressedThisFrame)
         {
             SceneTransition(Scene.InGame, true);
         }
+#endif
     }
 
     public void SceneTransition(Scene nextScene, bool onFade)
     {
+        if (_isTransitioning) return;
         if (_currentScene == nextScene) return;
 
         StartCoroutine(Fade(nextScene, onFade));
@@ -47,30 +55,37 @@ public class SceneController : MonoBehaviour
     /// </summary>
     private IEnumerator Fade(Scene nextScene, bool onFade)
     {
-        if (onFade) FadeAlpha(0f, 1f);
-        SceneManager.LoadScene((int)nextScene);
-        if (onFade) FadeAlpha(1f, 0f);
+        _isTransitioning = true;
 
-        yield return null;
+        bool useFade = onFade && _fadeImage != null;
+
+        if (useFade) yield return FadeAlpha(0f, 1f);
+
+        SceneManager.LoadScene((int)nextScene);
+        _currentScene = nextScene;
+
+        if (useFade) yield return FadeAlpha(1f, 0f);
+
+        _isTransitioning = false;
     }
 
     private IEnumerator FadeAlpha(float startAlpha, float endAlpha)
     {
-        float fadeTimer = 0.0f;
+        Color color = _fadeImage.color;
 
-        while (_fadeImage.color.a > 0)
+        _fadeImage.raycastTarget = true;
+
+        for (float t = 0f; t < _fadeDuration; t += Time.deltaTime)
         {
-            var color = _fadeImage.color;
-            color.a = fadeTimer / _fadeDuration;
-
+            color.a = Mathf.Lerp(startAlpha, endAlpha, t / _fadeDuration);
             _fadeImage.color = color;
-
-            fadeTimer -= Time.deltaTime;
-
             yield return null;
         }
 
-        yield return null;
+        color.a = endAlpha;
+        _fadeImage.color = color;
+
+        _fadeImage.raycastTarget = endAlpha > 0f;
     }
 }
 
