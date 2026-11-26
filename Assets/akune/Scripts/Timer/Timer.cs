@@ -45,7 +45,7 @@ public class Timer : MonoBehaviour
             }
 
             //タイマーの秒数を更新
-            _timerText.text = $"Timer:{(int)_timer}";
+            _timerText.text = $"Timer:{Mathf.CeilToInt(_timer)}";
         }
 
 #if UNITY_EDITOR  //テスト用
