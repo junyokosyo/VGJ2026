@@ -26,11 +26,13 @@ public class PhoneNavigator : MonoBehaviour
     public AppBase CurrentApp => _currentApp;
 
     /// <summary>
-    /// GameManager のイベントを受け取れるようにして、電源オフの画面から始める
+    /// GameManager のイベントを受け取れるようにして、何も出していない（黒い）画面から始める。
+    /// 電池切れの画面は、本当に電源が落ちたとき（OnPoweredOff）だけ出す。
+    /// 最初に出してしまうと、Title からのフェード中に起動を待つあいだ見えてしまうため
     /// </summary>
     private void Start()
     {
-        _gameManager.OnBooted += ShowLockScreen;
+        _gameManager.OnBooted += ShowHomeOnBoot;
         _gameManager.OnPoweredOff += ShowPowerOffScreen;
 
         foreach (AppBase app in _apps)
@@ -38,7 +40,7 @@ public class PhoneNavigator : MonoBehaviour
             app.gameObject.SetActive(false);
         }
 
-        ShowPowerOffScreen();
+        ShowOnly(null);
     }
 
     /// <summary>
@@ -48,7 +50,7 @@ public class PhoneNavigator : MonoBehaviour
     {
         if (_gameManager != null)
         {
-            _gameManager.OnBooted -= ShowLockScreen;
+            _gameManager.OnBooted -= ShowHomeOnBoot;
             _gameManager.OnPoweredOff -= ShowPowerOffScreen;
         }
     }
@@ -105,15 +107,13 @@ public class PhoneNavigator : MonoBehaviour
     }
 
     /// <summary>
-    /// 起動が終わったらロック画面を出す。
-    /// スワイプでロック画面をずらしたときに下からホーム画面が見えるよう、ホーム画面も後ろに表示しておく
-    /// （ヒエラルキーで HomeScreen が LockScreen より上にあること。ロック画面がクリックを受け止めるので、アイコンは押せない）
+    /// 起動が終わったらホーム画面を出す（仕様書 v0.2：タイトルからも「もう一度起動する」からも、ロック画面を通らずにホームから始まる）。
+    /// ロック画面はタイトルの演出でだけ使う
     /// </summary>
-    private void ShowLockScreen()
+    private void ShowHomeOnBoot()
     {
         CloseCurrentApp();
-        ShowOnly(_lockScreen);
-        _homeScreen.SetActive(true);
+        ShowOnly(_homeScreen);
     }
 
     /// <summary>

@@ -1,88 +1,78 @@
 using System;
-using TMPro;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
+/// <summary>
+/// 電源が落ちるまでの残り時間だけを管理する（仕様書 3-1：40秒）。
+/// 見た目は持たない。電池の表示は Battery がこのクラスの値を見て自分で更新する。
+/// 動かす・止める・満タンに戻すのは GameManager が行う
+/// </summary>
 public class Timer : MonoBehaviour
 {
-    [Header("バッテリー残量のイメージ")]
-    [SerializeField] Battery _battery;
+    [Header("電源が落ちるまでの秒数")]
+    [SerializeField] private float _duration = 40.0f;
 
-    [Header("タイマーのテキスト")]
-    [SerializeField] TextMeshProUGUI _timerText;
-
-    [Header("スマホが消える秒数")]
-    [SerializeField] float _gameOverTime = 30.0f;
-
-    private float _timer = 0.0f;
-    private bool _timerIsActive = false;
+    private float _remainingTime;
+    private bool _isActive;
 
     /// <summary>
     /// 時間切れになったときに1回だけ呼ばれる（GameManager が受け取って電源を落とす）
     /// </summary>
     public event Action OnTimeOver;
 
-    void Start()
+    /// <summary>
+    /// 電源が落ちるまでの秒数（満タンの時間）
+    /// </summary>
+    public float Duration => _duration;
+
+    /// <summary>
+    /// 残りの秒数
+    /// </summary>
+    public float RemainingTime => _remainingTime;
+
+    /// <summary>
+    /// 残りの割合（満タン 1 → 時間切れ 0）
+    /// </summary>
+    public float RemainingRate => _duration > 0f ? _remainingTime / _duration : 0f;
+
+    /// <summary>
+    /// 満タンから始める
+    /// </summary>
+    private void Awake()
     {
-        //インスペクターで設定されたタイムに設定
-        _timer = _gameOverTime;
+        _remainingTime = _duration;
     }
 
-    void Update()
+    /// <summary>
+    /// 動いているあいだだけ残り時間を減らし、0 になったら知らせる
+    /// </summary>
+    private void Update()
     {
-        //アクティブかつ0以上ならカウント
-        if (_timerIsActive && _timer > 0)
-        {
-            _timer -= Time.deltaTime;
-            //秒数の割合
-            var percent = _timer / _gameOverTime;
-
-            _battery.UpdateBatteryLevel(percent);
-
-            //タイムオーバーでイベント発火
-            if (_timer <= 0)
-            {
-                _timer = 0;
-                OnTimeOver?.Invoke();
-            }
-
-            //タイマーの秒数を更新
-            //テキストは仕様上表示しないので、設定されているときだけ更新する（デバッグ用）
-            if (_timerText != null)
-            {
-                _timerText.text = $"Timer:{Mathf.CeilToInt(_timer)}";
-            }
-        }
-
-#if UNITY_EDITOR  //テスト用
-        if (Keyboard.current == null)
+        if (!_isActive || _remainingTime <= 0f)
         {
             return;
         }
 
-        if (Keyboard.current.digit1Key.wasPressedThisFrame)
-        {
-            SetTimerIsActive(true);
-        }
+        _remainingTime = Mathf.Max(0f, _remainingTime - Time.deltaTime);
 
-        if (Keyboard.current.digit2Key.wasPressedThisFrame)
+        if (_remainingTime <= 0f)
         {
-            SetTimerIsActive(false);
+            OnTimeOver?.Invoke();
         }
-#endif
-    }
-
-    public void SetTimerIsActive(bool value)
-    {
-        _timerIsActive = value;
     }
 
     /// <summary>
-    /// 残り時間とバッテリー表示を満タンに戻す（再起動のときに GameManager が呼ぶ）
+    /// 時間を進めるか止めるか（GameManager が呼ぶ）
+    /// </summary>
+    public void SetTimerIsActive(bool isActive)
+    {
+        _isActive = isActive;
+    }
+
+    /// <summary>
+    /// 残り時間を満タンに戻す（起動のたびに GameManager が呼ぶ）
     /// </summary>
     public void ResetTimer()
     {
-        _timer = _gameOverTime;
-        _battery.ResetBattery();
+        _remainingTime = _duration;
     }
 }

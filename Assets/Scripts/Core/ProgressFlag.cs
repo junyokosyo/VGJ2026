@@ -1,20 +1,23 @@
 /// <summary>
-/// 調査で達成したこと（再起動しても消えない）
+/// 調査で達成したこと（電源が落ちても、ページを開き直しても残る）
 /// </summary>
 public enum ProgressFlag
 {
-    /// <summary>Memoのロックを解除した</summary>
+    /// <summary>Memo のロックを解除した</summary>
     MemoUnlocked,
 
-    /// <summary>Messagingの隠された履歴を開いた</summary>
+    /// <summary>Messaging の隠された履歴を開いた</summary>
     HiddenHistoryUnlocked,
 
-    /// <summary>鳥の裏側の数字を見つけた</summary>
-    BirdNumberFound,
+    /// <summary>鳥がくわえた手紙の裏の数字を見た</summary>
+    LetterNumberFound,
 
-    /// <summary>妻からロッカーの話を聞いた</summary>
+    /// <summary>妻からロッカーの話を聞いた（「番号を送る」が出る）</summary>
     LockerHintReceived,
 
-    /// <summary>ロッカーを開けた</summary>
-    LockerOpened
+    /// <summary>Messaging を一度開いた（ホームの未読の印が消える）</summary>
+    MessagingSeen,
+
+    /// <summary>エンディングにたどり着いた</summary>
+    Ended
 }
