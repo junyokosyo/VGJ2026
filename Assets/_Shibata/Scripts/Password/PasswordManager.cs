@@ -70,6 +70,5 @@ public class PasswordManager : MonoBehaviour
         }
 
         GenerateAnswers();
-        InstancePassword();
     }
 }

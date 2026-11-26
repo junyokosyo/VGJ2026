@@ -17,10 +17,12 @@ public class PicturePassword
         _november = Random.Range(3, 10);
         _december = Random.Range(3, 10);
 
-        _correct = _october.ToString("D2") + 
-            _september.ToString("D2") + 
-            _december.ToString("D2") + 
-            _november.ToString("D2");
+        _correct = _october.ToString() + 
+            _september.ToString() + 
+            _december.ToString() + 
+            _november.ToString();
+
+        UnityEngine.Debug.Log(_correct);
     }
 
     /// <summary>

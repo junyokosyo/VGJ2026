@@ -1,4 +1,6 @@
 using System;
+using System.Diagnostics;
+using UnityEngine;
 
 public class PasswordChecker
 {
@@ -11,8 +13,10 @@ public class PasswordChecker
             case PuzzleType.Lock:
                 if (text == PasswordManager.Instance.Correct)
                 {
+                    UnityEngine.Debug.Log("Clear");
                     PasswordManager.Instance.ChangeType(PuzzleType.Picture);
                     PasswordManager.Instance.SetCorrect(PasswordManager.Instance.PicturrePassword.Correct);
+                    PasswordManager.Instance.InstancePassword();
                     OnReset?.Invoke();
                 }
                 else OnReset?.Invoke();
