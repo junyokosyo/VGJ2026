@@ -10,9 +10,9 @@ public class Battery : MonoBehaviour
     [SerializeField] private GameObject _batterySegmentPrefab;
 
     [Header("バッテリーの一本ごとの間隔")]
-    [SerializeField] private int _batteryOffset;
+    [SerializeField] private int _batteryOffset = 9;
     [Header("バッテリー1本目の左側の間隔(+の値を入れてください)")]
-    [SerializeField] private int _leftPadding;
+    [SerializeField] private int _leftPadding = 40;
 
     private Image[] _battery;
     private int _previousFilledCount = 0;
