@@ -1,20 +1,23 @@
+using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using Image = UnityEngine.UI.Image;
 
 public class PasswordInput : MonoBehaviour,IPointerDownHandler
 {
+    public static Action<int> OnClicked;
+
     [SerializeField]
     private AnswerDatabase _answerDatabase;
     [SerializeField,Range(1,9)]
     private int _id;
     private PicturePassword _picturePassword;
     private Image _image;
+    private string _passWord;
 
     public void OnPointerDown(PointerEventData data)
     {
-        //テキストに表示する処理
-        Debug.Log(_id);
+        OnClicked?.Invoke(_id);
     }
 
     void Awake()
