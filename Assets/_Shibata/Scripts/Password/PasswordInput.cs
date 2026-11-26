@@ -5,10 +5,17 @@ using Image = UnityEngine.UI.Image;
 
 public class PasswordInput : MonoBehaviour, IPointerDownHandler
 {
+    /// <summary>
+    /// 入力ボタンをクリックした時
+    /// </summary>
     public static Action<int> OnClicked;
 
-    [SerializeField, Range(0, 9)]
+    [SerializeField, Range(0, 9),Header("取得したいID")]
     private int _id;
+
+    /// <summary>
+    /// 入力ボタンのデータの取得
+    /// </summary>
     private ButtonData _picturePassword;
     private Image _image;
 

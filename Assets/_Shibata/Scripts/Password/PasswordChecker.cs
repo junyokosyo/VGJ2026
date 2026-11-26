@@ -1,11 +1,16 @@
 using System;
-using System.Diagnostics;
-using UnityEngine;
 
 public class PasswordChecker
 {
+    /// <summary>
+    /// 自分の回答をリセット時
+    /// </summary>
     public static event Action OnReset;
 
+    /// <summary>
+    /// 自分の回答が正しいか
+    /// </summary>
+    /// <param name="text">自分の回答</param>
     public void CheckAnswer(string text)
     {
         switch (PasswordManager.Instance.PuzzleType)
@@ -22,11 +27,14 @@ public class PasswordChecker
                 else OnReset?.Invoke();
                 break;
             case PuzzleType.Picture:
-                if (PasswordManager.Instance.PicturrePassword.CheckAnswer(PasswordManager.Instance.Correct))
+                if (PasswordManager.Instance.PicturrePassword.CheckAnswer(text))
                 {
                     UnityEngine.Debug.Log("クリア");
                 }
-                else OnReset?.Invoke();
+                else
+                {
+                    OnReset?.Invoke();
+                }
                 break;
         }
     }

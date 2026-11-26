@@ -2,14 +2,32 @@ using UnityEngine;
 
 public class PicturePassword
 {
+    /// <summary>
+    /// 正しい答え
+    /// </summary>
     public string Correct => _correct;
 
+    /// <summary>
+    /// ９月の枚数
+    /// </summary>
     private int _september;
+    /// <summary>
+    /// １０月の枚数
+    /// </summary>
     private int _october;
+    /// <summary>
+    /// １１月の枚数
+    /// </summary>
     private int _november;
+    /// <summary>
+    /// 12月の枚数
+    /// </summary>
     private int _december;
     private string _correct;
 
+    /// <summary>
+    /// 画像の数の抽選
+    /// </summary>
     public void OnInstace()
     {
         _september = Random.Range(3, 10);
@@ -17,12 +35,12 @@ public class PicturePassword
         _november = Random.Range(3, 10);
         _december = Random.Range(3, 10);
 
-        _correct = _october.ToString() + 
-            _september.ToString() + 
-            _december.ToString() + 
+        _correct = _october.ToString() +
+            _september.ToString() +
+            _december.ToString() +
             _november.ToString();
 
-        UnityEngine.Debug.Log(_correct);
+        Debug.Log(_correct);
     }
 
     /// <summary>
@@ -30,16 +48,5 @@ public class PicturePassword
     /// </summary>
     /// <param name="answer">回答</param>
     /// <returns>全部一致だったらtrue</returns>
-    public bool CheckAnswer(string answer)
-    {
-        var september = answer[0] - '0';
-        var october = answer[1] - '0';
-        var november = answer[2] - '0';
-        var december = answer[3] - '0';
-
-        return september == _september
-                && october == _october
-                && november == _november
-                && december == _december;
-    }
+    public bool CheckAnswer(string answer) => answer == _correct;
 }
