@@ -6,6 +6,9 @@ public enum PuzzleType
     Picture
 }
 
+/// <summary>
+/// シングルトンパターン
+/// </summary>
 public class PasswordManager : MonoBehaviour
 {
     public static PasswordManager Instance
@@ -25,37 +28,62 @@ public class PasswordManager : MonoBehaviour
         }
     }
 
-    public string LockAnswer => _lockAnswer;
-    public string PictureAnswer => _pictureAnswer;
+    /// <summary>
+    /// 誕生月などのデータ取得
+    /// </summary>
     public AnswerDatabase DataBase => _dataBase;
+    /// <summary>
+    /// ギャラリーでのなぞ解きの回答
+    /// </summary>
+    public PicturePassword PicturrePassword => _picturePassword;
+    /// <summary>
+    /// 現在どの謎を解いているか
+    /// </summary>
     public PuzzleType PuzzleType => _puzzleType;
+    /// <summary>
+    /// 正しい答え
+    /// </summary>
+    public string Correct => _correct;
 
     [SerializeField]
     private AnswerDatabase _dataBase;
     private static PasswordManager instance;
-    private string _lockAnswer;
-    private string _pictureAnswer;
-    private PuzzleType _puzzleType = PuzzleType.Lock;
+    private PuzzleType _puzzleType;
+    private PicturePassword _picturePassword = new();
+    private string _correct;
 
+    /// <summary>
+    /// 現在解いてる謎の切替
+    /// </summary>
+    /// <param name="type">切り替えたいタイプ</param>
     public void ChangeType(PuzzleType type)
     {
         _puzzleType = type;
     }
 
-    public void AddRockAnswer(string answer)
+    /// <summary>
+    /// 正しい回答をセット
+    /// </summary>
+    /// <param name="correct">正しい答え</param>
+    public void SetCorrect(string correct)
     {
-        Debug.Log(answer);
-        _lockAnswer = answer;
+        _correct = correct;
     }
 
-    public void SetPictureAnswer(string answer)
-    {
-        _pictureAnswer = answer;
-    }
-
+    /// <summary>
+    /// 誕生日と月のランダム抽選
+    /// </summary>
     public void GenerateAnswers()
     {
         _dataBase.LockPasswordAnswers.SetBirthDay();
+    }
+
+    /// <summary>
+    /// ギャラリーのパスワードのランダム抽選
+    /// </summary>
+    public void InstancePassword()
+    {
+        _picturePassword.OnInstace();
     }
 
     void Awake()
@@ -67,9 +95,11 @@ public class PasswordManager : MonoBehaviour
         }
         else if (instance != this)
         {
-            Destroy(gameObject); // 重複インスタンスを破棄
+            Destroy(gameObject);
+            return;
         }
 
+        _puzzleType = PuzzleType.Lock;
         GenerateAnswers();
     }
 }

@@ -1,36 +1,41 @@
 using System;
-using System.Diagnostics;
 
 public class PasswordChecker
 {
+    /// <summary>
+    /// 自分の回答をリセット時
+    /// </summary>
     public static event Action OnReset;
 
-    private string Answer()
-    {
-        if (PasswordManager.Instance.PuzzleType == PuzzleType.Lock)
-        {
-            return PasswordManager.Instance.LockAnswer;
-        }
-        else return PasswordManager.Instance.PictureAnswer;
-    }
-
+    /// <summary>
+    /// 自分の回答が正しいか
+    /// </summary>
+    /// <param name="text">自分の回答</param>
     public void CheckAnswer(string text)
     {
-        if (text == Answer())
+        switch (PasswordManager.Instance.PuzzleType)
         {
-            switch(PasswordManager.Instance.PuzzleType)
-            {
-                case PuzzleType.Lock:
+            case PuzzleType.Lock:
+                if (text == PasswordManager.Instance.Correct)
+                {
+                    UnityEngine.Debug.Log("Clear");
                     PasswordManager.Instance.ChangeType(PuzzleType.Picture);
-                    break;
-                case PuzzleType.Picture:
+                    PasswordManager.Instance.InstancePassword();
+                    PasswordManager.Instance.SetCorrect(PasswordManager.Instance.PicturrePassword.Correct);
+                    OnReset?.Invoke();
+                }
+                else OnReset?.Invoke();
+                break;
+            case PuzzleType.Picture:
+                if (PasswordManager.Instance.PicturrePassword.CheckAnswer(text))
+                {
                     UnityEngine.Debug.Log("クリア");
-                    break;
-            }
-        }
-        else
-        {
-            OnReset?.Invoke();
+                }
+                else
+                {
+                    OnReset?.Invoke();
+                }
+                break;
         }
     }
 }
