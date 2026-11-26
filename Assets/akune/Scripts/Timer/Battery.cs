@@ -1,112 +1,100 @@
-using System.Collections;
+using DG.Tweening;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// ステータスバーの電池の表示（デモと同じ：10% から始まり、40秒で 0% になる。4秒で 1% ずつ減る）。
+/// 時間は持たない。Timer の残りの割合を見て、% の文字と10本のバーを更新するだけ。
+/// バーの Image に絵を入れれば、そのまま絵が使われる（減ったバーは薄くなる）
+/// </summary>
 public class Battery : MonoBehaviour
 {
-    [Header("バッテリーのメモリを入れる親オブジェクト")]
-    [SerializeField] private Transform _batteryParent;
-    [Header("バッテリー1本を表すプレファブ")]
-    [SerializeField] private GameObject _batterySegmentPrefab;
-    [Header("バッテリーの一本ごとの間隔")]
-    [SerializeField] private int _batteryOffset = 9;
-    [Header("バッテリー1本目の左側の間隔(+の値を入れてください)")]
-    [SerializeField] private int _leftPadding = 40;
-    [Header("バッテリー1本が消えるまでの秒数")]
-    [SerializeField] private float _batteryDecreaseDuration = 0.3f;
+    [Header("参照")]
+    [SerializeField] private Timer _timer;
 
+    [Header("表示")]
+    [SerializeField] private TextMeshProUGUI _percentText;
+    [SerializeField] private Image[] _bars;
 
-    private Image[] _battery;
-    private int _previousFilledCount = 0;
-    private const int _batterySegmentCount = 10;
-    private void Awake()
-    {
-        _battery = new Image[_batterySegmentCount];
+    [Header("満タンのときに出す %（バーの本数と同じにする）")]
+    [SerializeField] private int _startPercent = 10;
 
-        var startPos = _batteryParent.position - new Vector3(_leftPadding, 0, 0);
+    [Header("減ったバーの濃さと、薄くなるまでの秒数")]
+    [SerializeField] private float _spentAlpha = 0.14f;
+    [SerializeField] private float _fadeDuration = 0.35f;
 
-        //バッテリーを本数分生成
-        for (int i = 0; i < _batterySegmentCount; ++i)
-        {
-            //バッテリーの間隔をあけて生成
-            var spawnPos = startPos + new Vector3(_batteryOffset * i, 0, 0);
-            //生成したオブジェクトのImageを保存
-            _battery[i] = Instantiate(_batterySegmentPrefab, spawnPos , Quaternion.identity, _batteryParent).GetComponent<Image>();
-        }
-    }
-
+    private int _shownPercent = -1;
 
     /// <summary>
-    /// タイマー側から秒数の割合を引数に入れて毎フレーム更新
+    /// 今表示している %
     /// </summary>
-    public void UpdateBatteryLevel(float percent)
-    {
-        //バッテリーが10％未満の時にも一本表示させるため繰り上げ
-        int intPercent = Mathf.CeilToInt(percent * 10);
-        //percentをもとに何本減らすかを持つ変数
-        int filledSegmentCount = _batterySegmentCount - intPercent;
+    public int Percent => _shownPercent;
 
-        //バッテリーが減った時だけ処理を走らせる
-        if (filledSegmentCount != _previousFilledCount)
+    /// <summary>
+    /// 最初の表示をすぐに出す（アニメーションなし）
+    /// </summary>
+    private void Start()
+    {
+        if (_timer == null)
         {
-            DecreaseBattery(filledSegmentCount - _previousFilledCount);
-            _previousFilledCount = filledSegmentCount;
-            Debug.Log(filledSegmentCount);
+            Debug.LogWarning($"[Battery] {name} に Timer がつながっていません");
+            enabled = false;
+            return;
+        }
+
+        Refresh(CalculatePercent(), false);
+    }
+
+    /// <summary>
+    /// % が変わったときだけ表示を更新する（再起動で満タンに戻ったときも、ここで戻る）
+    /// </summary>
+    private void Update()
+    {
+        int percent = CalculatePercent();
+
+        if (percent != _shownPercent)
+        {
+            Refresh(percent, true);
         }
     }
 
     /// <summary>
-    /// バッテリーを満タンに戻す（再起動のときに Timer から呼ばれる）
+    /// 残りの割合を % にする。0% になるのは時間切れのときだけにしたいので切り上げる
     /// </summary>
-    public void ResetBattery()
+    private int CalculatePercent()
     {
-        //消えるアニメーションの途中のものを止める
-        StopAllCoroutines();
-
-        foreach (Image segment in _battery)
-        {
-            segment.fillAmount = 1f;
-            segment.gameObject.SetActive(true);
-        }
-
-        _previousFilledCount = 0;
+        return Mathf.CeilToInt(_timer.RemainingRate * _startPercent);
     }
 
-    private void DecreaseBattery(int decreaseCount)
+    /// <summary>
+    /// % の文字とバーの濃さを変える
+    /// </summary>
+    private void Refresh(int percent, bool isAnimated)
     {
-        //バッテリーを減らし終わった時にループを抜け出すためのカウンター
-        int batteryCount = _batterySegmentCount - 1;
+        _shownPercent = percent;
 
-        for (int i = 0; i <= batteryCount; ++i)
+        if (_percentText != null)
         {
-            //バッテリーの後ろからactiveかどうかを調べてactiveのやつを減らす
-            if(_battery[batteryCount - i].gameObject.activeSelf)
+            _percentText.text = $"{percent}%";
+        }
+
+        for (int i = 0; i < _bars.Length; i++)
+        {
+            float alpha = i < percent ? 1f : _spentAlpha;
+            Image bar = _bars[i];
+            bar.DOKill();
+
+            if (isAnimated)
             {
-                StartCoroutine(PlaySegmentDisappearAnimation(_battery[batteryCount - i]));
-                --decreaseCount;
+                bar.DOFade(alpha, _fadeDuration).SetLink(bar.gameObject);
             }
             else
             {
-                continue;
+                Color color = bar.color;
+                color.a = alpha;
+                bar.color = color;
             }
-
-            //減らした回数が0になったらループから抜け出す
-            if (decreaseCount <= 0) break;
         }
-    }
-
-    private IEnumerator PlaySegmentDisappearAnimation(Image battery)
-    {
-        float animTimer = _batteryDecreaseDuration;
-
-        while (animTimer > 0)
-        {
-            animTimer -= Time.deltaTime;
-            battery.fillAmount = animTimer / _batteryDecreaseDuration;
-
-            yield return null;
-        }
-
-        battery.gameObject.SetActive(false);
     }
 }

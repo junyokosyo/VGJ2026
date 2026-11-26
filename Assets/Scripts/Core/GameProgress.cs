@@ -4,8 +4,8 @@ using UnityEngine;
 /// <summary>
 /// 1プレイ分の進行状況を保持し、PlayerPrefs に保存する（仕様書 v0.2 の3-2）。
 /// ・やり直し（電池切れ →「もう一度起動する」）：消えない
-/// ・ページを開き直す：保存データから読み込んで続きから
-/// ・新しいゲーム（「最初からやり直す」「はじめから遊ぶ」）：NewGame で消して、暗証番号を抽選し直す
+/// ・新しいゲーム（Title から InGame に入ったとき）：NewGame で消して、暗証番号を抽選し直す
+/// ・InGame を直接開いたとき（エディタでのテストなど）：保存データの続きから
 /// どのスクリプトからでも GameProgress.SetFlag(...) のように直接呼べる。値を変えると自動で保存する
 /// </summary>
 public static class GameProgress
@@ -13,6 +13,7 @@ public static class GameProgress
     private const string SaveKey = "nosubject-save";
 
     private static SaveData _data;
+    private static bool _isNewGameRequested;
 
     /// <summary>
     /// フラグが新しく立ったとき（引数：立ったフラグ）。
@@ -21,7 +22,7 @@ public static class GameProgress
     public static event Action<ProgressFlag> OnFlagSet;
 
     /// <summary>
-    /// 新しいゲームが始まったとき。暗証番号の抽選はこれを受け取って行い、SetCodes で入れる。
+    /// 新しいゲームが始まったとき（暗証番号はもう抽選済み）。
     /// static なイベントなので、登録した側は OnDestroy で必ず解除すること
     /// </summary>
     public static event Action OnReset;
@@ -111,41 +112,40 @@ public static class GameProgress
 
         if (!_data.Codes.IsValid)
         {
-            // 前回、抽選が終わる前に閉じられた場合など
-            OnReset?.Invoke();
-            WarnIfCodesInvalid();
+            // 保存データの番号がおかしいとき（古い形式など）は、番号だけ抽選し直す
+            _data.Codes = PasswordLottery.Roll();
+            Save();
         }
     }
 
     /// <summary>
-    /// 新しいゲームにする（進行状況をすべて消し、OnReset で暗証番号の抽選を頼む）。
-    /// 「最初からやり直す」「はじめから遊ぶ」から呼ぶ
+    /// 次に InGame が始まったときに、新しいゲームにするよう予約する（Title から InGame へ進むときに呼ぶ）
+    /// </summary>
+    public static void RequestNewGame()
+    {
+        _isNewGameRequested = true;
+    }
+
+    /// <summary>
+    /// 新しいゲームの予約があれば取り消して true を返す（GameManager が InGame の開始時に呼ぶ）
+    /// </summary>
+    public static bool ConsumeNewGameRequest()
+    {
+        bool isRequested = _isNewGameRequested;
+        _isNewGameRequested = false;
+        return isRequested;
+    }
+
+    /// <summary>
+    /// 新しいゲームにする（進行状況をすべて消し、暗証番号を抽選し直す）。
+    /// 通常は Title から InGame に入ったときに GameManager が呼ぶ
     /// </summary>
     public static void NewGame()
     {
         _data = new SaveData();
+        _data.Codes = PasswordLottery.Roll();
         Save();
         OnReset?.Invoke();
-        WarnIfCodesInvalid();
-    }
-
-    /// <summary>
-    /// 暗証番号の元を入れる（柴田さんの抽選から呼ぶ）
-    /// </summary>
-    public static void SetCodes(PuzzleCodes codes)
-    {
-        if (codes == null || !codes.IsValid)
-        {
-            Debug.LogError("[GameProgress] 暗証番号が仕様どおりではありません（写真3〜9枚・数字0〜9・手紙4桁・3つのパスコードが別々）");
-            return;
-        }
-
-        Data.Codes = codes;
-        Save();
-
-#if UNITY_EDITOR
-        Debug.Log($"[GameProgress] 今回の答え Memo:{codes.MemoPassword} 履歴:{codes.HistoryPassword} ロッカー:{codes.LockerPassword}");
-#endif
     }
 
     /// <summary>
@@ -239,16 +239,5 @@ public static class GameProgress
     {
         PlayerPrefs.SetString(SaveKey, JsonUtility.ToJson(_data));
         PlayerPrefs.Save();
-    }
-
-    /// <summary>
-    /// 抽選が行われなかったときに知らせる（柴田さんの抽選がまだシーンにないときなど）
-    /// </summary>
-    private static void WarnIfCodesInvalid()
-    {
-        if (!_data.Codes.IsValid)
-        {
-            Debug.LogWarning("[GameProgress] 暗証番号がまだ抽選されていません。OnReset を受け取って SetCodes を呼ぶ仕組みが必要です");
-        }
     }
 }

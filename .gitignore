@@ -140,3 +140,7 @@ crashlytics-build.properties
 # Assets/Tool: share the folder structure, ignore files added inside leaf folders
 /Assets/Tool/*/*/*
 !/Assets/Tool/*/*/.gitkeep
+
+# Designer art (Google Drive). Shared outside git: public repo, large files, photos
+/[Aa]ssets/[Aa]rt/
+/[Aa]ssets/[Aa]rt.meta

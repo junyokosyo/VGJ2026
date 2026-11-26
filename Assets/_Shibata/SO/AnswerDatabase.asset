@@ -13,27 +13,35 @@ MonoBehaviour:
   m_Name: AnswerDatabase
   m_EditorClassIdentifier: Assembly-CSharp::AnswerDatabase
   PicturePasswords:
-  - ImageSprite: {fileID: 10915, guid: 0000000000000000f000000000000000, type: 0}
+  - ImageSprite: {fileID: 0}
     ID: 1
-  - ImageSprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+  - ImageSprite: {fileID: 0}
     ID: 2
-  - ImageSprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+  - ImageSprite: {fileID: 0}
     ID: 3
-  - ImageSprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+  - ImageSprite: {fileID: 0}
     ID: 4
-  - ImageSprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+  - ImageSprite: {fileID: 0}
     ID: 5
-  - ImageSprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+  - ImageSprite: {fileID: 0}
     ID: 6
-  - ImageSprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+  - ImageSprite: {fileID: 0}
     ID: 7
-  - ImageSprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+  - ImageSprite: {fileID: 0}
     ID: 8
-  - ImageSprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+  - ImageSprite: {fileID: 0}
     ID: 9
-  - ImageSprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+  - ImageSprite: {fileID: 0}
     ID: 0
   confirmedSprites:
   - Month: 1
     Sprite: []
-  Messages: []
+  Messages:
+  - Month: 9
+    Story: "\u3072\u306A\u3068\u516C\u5712\u3092\u6B69\u3044\u305F\u3002\u307E\u3060\u4E00\u7DD2\u306B\u9060\u304F\u307E\u3067\u884C\u3051\u305F\u3002"
+  - Month: 10
+    Story: "\u30AB\u30E1\u30E9\u3092\u843D\u3068\u3057\u305D\u3046\u306B\u306A\u3063\u305F\u3002\u6307\u5148\u306B\u529B\u304C\u5165\u3089\u306A\u3044\u3002"
+  - Month: 11
+    Story: "\u9577\u304F\u7ACB\u3063\u3066\u3044\u308B\u306E\u304C\u96E3\u3057\u304F\u306A\u3063\u305F\u3002\u9014\u4E2D\u3067\u5EA7\u3063\u3066\u5199\u771F\u3092\u64AE\u3063\u305F\u3002"
+  - Month: 12
+    Story: "\u5199\u771F\u3092\u64AE\u308D\u3046\u3068\u3057\u3066\u3082\u3001\u3046\u307E\u304F\u64AE\u308C\u306A\u304B\u3063\u305F\u3002\u4F55\u5EA6\u3082\u5931\u6557\u3057\u305F\u3002"

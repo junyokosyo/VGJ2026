@@ -1,24 +1,20 @@
 using System;
 using System.Collections;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 /// <summary>
 /// ゲーム全体の流れを管理する（仕様書 v0.2）。
 /// 起動 → 40秒で電源オフ →「もう一度起動する」で再起動（やり直し）→ …をくり返し、Messaging の返事でエンディングへ進む。
 /// ・やり直し（電池切れ）：進行状況も暗証番号もそのまま。ホーム画面から再開し、再起動の回数が1増える
-/// ・新しいゲーム（「最初からやり直す」「はじめから遊ぶ」）：進行状況を消し、暗証番号を抽選し直す
-/// ・ページを開き直す：保存データの続きから
+/// ・新しいゲーム（Title から InGame に入ったとき）：進行状況を消し、暗証番号を抽選し直す
+/// ・「最初からやり直す」「はじめから遊ぶ」：Title へ戻る（次に InGame に入ったときに新しいゲームになる）
 /// </summary>
 public class GameManager : MonoBehaviour
 {
-    private const string EndingSceneName = "Result";
-    private const string TitleSceneName = "Title";
-
     [Header("参照")]
     [SerializeField] private Timer _timer;
 
-    [Header("タイトルを通さずにすぐ起動するか（タイトル画面ができるまでのテスト用）")]
+    [Header("シーンを開いたらすぐ起動するか（Title から来たときは、スマホが上がりきった状態で始まる）")]
     [SerializeField] private bool _isBootOnStart = true;
 
     [Header("演出の待ち時間（秒）")]
@@ -70,12 +66,17 @@ public class GameManager : MonoBehaviour
 
     /// <summary>
     /// 時間切れを受け取れるようにして、1フレーム待ってから起動する
-    /// （ほかのスクリプトが Start でイベント登録を終えるのを待つため）
+    /// （ほかのスクリプトが Start でイベント登録を終えるのを待つため。暗証番号の抽選も、登録が終わってから頼む）
     /// </summary>
     private IEnumerator Start()
     {
         _timer.OnTimeOver += HandleTimeOver;
         yield return null;
+
+        if (GameProgress.ConsumeNewGameRequest())
+        {
+            GameProgress.NewGame();
+        }
 
         if (_isBootOnStart)
         {
@@ -109,7 +110,7 @@ public class GameManager : MonoBehaviour
     }
 
     /// <summary>
-    /// タイトルでスマホを上にドラッグしたときに呼ぶ。再起動の回数は増えない
+    /// 最初の起動（Title から来たとき・シーンを直接開いたとき）。再起動の回数は増えない
     /// </summary>
     public void StartFromTitle()
     {
@@ -163,12 +164,12 @@ public class GameManager : MonoBehaviour
         GameProgress.SetFlag(ProgressFlag.Ended);
         OnGameEnded?.Invoke(ending);
 
-        StartCoroutine(LoadSceneAfterDelay(EndingSceneName, _endingDelay));
+        StartCoroutine(LoadSceneAfterDelay(GameScene.Result, _endingDelay));
     }
 
     /// <summary>
-    /// 「最初からやり直す」→ 確認で「やり直す」を押したときに呼ぶ。
-    /// 進行状況を消して暗証番号を作り直し、タイトルへ戻る
+    /// 「最初からやり直す」→ 確認で「やり直す」、記録画面の「はじめから遊ぶ」から呼ぶ。
+    /// Title へ戻る（進行状況の消去と暗証番号の抽選は、次に InGame に入ったときに行われる）
     /// </summary>
     public void ReturnToTitle()
     {
@@ -176,10 +177,7 @@ public class GameManager : MonoBehaviour
         _currentState = PhoneState.Ended;
         ApplyTimerState();
 
-        GameProgress.NewGame();
-
-        // TODO: タイトルを InGame の中の状態にしたら、シーンを読み込まずにタイトルの演出へ切り替える
-        SceneManager.LoadScene(TitleSceneName);
+        SceneController.Load(GameScene.Title);
     }
 
     /// <summary>
@@ -238,11 +236,9 @@ public class GameManager : MonoBehaviour
     /// <summary>
     /// 指定した秒数を待ってからシーンを切り替える
     /// </summary>
-    private IEnumerator LoadSceneAfterDelay(string sceneName, float delay)
+    private IEnumerator LoadSceneAfterDelay(GameScene scene, float delay)
     {
         yield return new WaitForSeconds(delay);
-
-        // TODO: SceneController（フェードつき）が完成したら、そちら経由に差し替える
-        SceneManager.LoadScene(sceneName);
+        SceneController.Load(scene);
     }
 }

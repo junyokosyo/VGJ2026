@@ -2,7 +2,7 @@ using System;
 
 /// <summary>
 /// 1プレイ分の暗証番号の元になる数字（仕様書 v0.2 の3-3）。
-/// 抽選は柴田さんの担当。GameProgress.OnReset を受け取って抽選し、GameProgress.SetCodes で入れる。
+/// 抽選は PasswordLottery、保存は GameProgress が行う。
 /// ここは「入れておく場所」と「パスコードの組み立て方」だけを持つ
 /// </summary>
 [Serializable]

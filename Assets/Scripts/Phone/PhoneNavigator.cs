@@ -26,7 +26,9 @@ public class PhoneNavigator : MonoBehaviour
     public AppBase CurrentApp => _currentApp;
 
     /// <summary>
-    /// GameManager のイベントを受け取れるようにして、電源オフの画面から始める
+    /// GameManager のイベントを受け取れるようにして、何も出していない（黒い）画面から始める。
+    /// 電池切れの画面は、本当に電源が落ちたとき（OnPoweredOff）だけ出す。
+    /// 最初に出してしまうと、Title からのフェード中に起動を待つあいだ見えてしまうため
     /// </summary>
     private void Start()
     {
@@ -38,7 +40,7 @@ public class PhoneNavigator : MonoBehaviour
             app.gameObject.SetActive(false);
         }
 
-        ShowPowerOffScreen();
+        ShowOnly(null);
     }
 
     /// <summary>
