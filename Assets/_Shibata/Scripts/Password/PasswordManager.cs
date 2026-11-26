@@ -25,17 +25,19 @@ public class PasswordManager : MonoBehaviour
         }
     }
 
-    public string LockAnswer => _lockAnswer;
-    public string PictureAnswer => _pictureAnswer;
     public AnswerDatabase DataBase => _dataBase;
     public PuzzleType PuzzleType => _puzzleType;
+    public string LockAnswer => _lockAnswer;
+    public string PictureAnswer => _pictureAnswer;
 
     [SerializeField]
     private AnswerDatabase _dataBase;
     private static PasswordManager instance;
+    private PuzzleType _puzzleType = PuzzleType.Lock;
+    private PicturePassword _instancePassword = new();
     private string _lockAnswer;
     private string _pictureAnswer;
-    private PuzzleType _puzzleType = PuzzleType.Lock;
+    private int _september;
 
     public void ChangeType(PuzzleType type)
     {
@@ -58,6 +60,11 @@ public class PasswordManager : MonoBehaviour
         _dataBase.LockPasswordAnswers.SetBirthDay();
     }
 
+    public void InstancePassword()
+    {
+        _instancePassword.OnInstace();
+    }
+
     void Awake()
     { 
         if (instance == null)
@@ -71,5 +78,6 @@ public class PasswordManager : MonoBehaviour
         }
 
         GenerateAnswers();
+        InstancePassword();
     }
 }

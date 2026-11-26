@@ -7,7 +7,7 @@ using Randam = UnityEngine.Random;
 public class AnswerDatabase : ScriptableObject
 {
     public LockPassword LockPasswordAnswers;
-    public List<PicturePassword> PicturePasswords; 
+    public List<ButtonData> PicturePasswords; 
 }
 
 /// ロック画面のパスワード
@@ -52,7 +52,7 @@ public class LockPassword
 
 //ボタンのデータ
 [System.Serializable]
-public class PicturePassword
+public class ButtonData
 {
     [Header("数字の画像")]
     public Sprite ImageSprite;

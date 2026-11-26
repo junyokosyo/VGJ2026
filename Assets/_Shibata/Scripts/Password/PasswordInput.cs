@@ -9,7 +9,7 @@ public class PasswordInput : MonoBehaviour, IPointerDownHandler
 
     [SerializeField, Range(0, 9)]
     private int _id;
-    private PicturePassword _picturePassword;
+    private ButtonData _picturePassword;
     private Image _image;
 
     public void OnPointerDown(PointerEventData data)
