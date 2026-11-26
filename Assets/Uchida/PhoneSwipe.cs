@@ -120,7 +120,7 @@ public class PhoneSwipe : MonoBehaviour
 
         float moveX = deltaX / scale;
 
-        moveX = Mathf.Clamp(moveX, -_frontScreen.rect.width, _frontScreen.rect.width);
+        moveX = Mathf.Clamp(moveX, -_frontScreen.rect.width, 0);
 
         _moveLength = Mathf.Abs(deltaX);
 
