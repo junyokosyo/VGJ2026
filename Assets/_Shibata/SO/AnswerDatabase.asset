@@ -17,3 +17,19 @@ MonoBehaviour:
     ID: 1
   - ImageSprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
     ID: 2
+  - ImageSprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+    ID: 3
+  - ImageSprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+    ID: 4
+  - ImageSprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+    ID: 5
+  - ImageSprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+    ID: 6
+  - ImageSprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+    ID: 7
+  - ImageSprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+    ID: 8
+  - ImageSprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+    ID: 9
+  - ImageSprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+    ID: 0

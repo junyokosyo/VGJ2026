@@ -9,7 +9,7 @@ public class PasswordInput : MonoBehaviour, IPointerDownHandler
 
     [SerializeField]
     private AnswerDatabase _answerDatabase;
-    [SerializeField, Range(1, 9)]
+    [SerializeField, Range(0, 9)]
     private int _id;
     private PicturePassword _picturePassword;
     private Image _image;
@@ -29,6 +29,7 @@ public class PasswordInput : MonoBehaviour, IPointerDownHandler
             }
         }
 
+        PasswordManager.Instance.SetData(_answerDatabase);
         _image = GetComponent<Image>();
         _image.sprite = _picturePassword.ImageSprite;
     }

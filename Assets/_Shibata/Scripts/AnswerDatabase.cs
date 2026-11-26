@@ -6,7 +6,7 @@ using Randam = UnityEngine.Random;
 [CreateAssetMenu(fileName = "AnswerDatabase", menuName = "Scriptable Objects/AnswerDatabase")]
 public class AnswerDatabase : ScriptableObject
 {
-    public LockPassword RockPasswordAnswers;
+    public LockPassword LockPasswordAnswers;
     public List<PicturePassword> PicturePasswords; 
 }
 
@@ -27,18 +27,23 @@ public class LockPassword
         _birthDay.Clear();
         _birthMonth.Clear();
 
-        for (int i = 1; i <= 12; i++)
+        for (int i = 1; i <= 1; i++)
         {
             _birthMonth.Add(i);
         }
 
-        for (int i = 1; i <= 28; i++)
+        for (int i = 1; i <= 2; i++)
         {
             _birthDay.Add(i);
         }
 
         _selectBirthDay = _birthDay[Randam.Range(0, _birthDay.Count)];
         _selectBirthMonth = _birthMonth[Randam.Range(0, _birthMonth.Count)];
+
+        string answer = _selectBirthMonth.ToString("D2") + _selectBirthDay.ToString("D2");
+        PasswordManager.Instance.AddRockAnswer(answer);
+
+        Debug.Log(_selectBirthMonth + "月" + _selectBirthDay + "日");
     }
 }
 
@@ -48,6 +53,6 @@ public class PicturePassword
 {
     [Header("数字の画像")]
     public Sprite ImageSprite;
-    [Header("画像の数字"),Range(1,9)]
+    [Header("画像の数字"),Range(0,9)]
     public int ID;
 }
