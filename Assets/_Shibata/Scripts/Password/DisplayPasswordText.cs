@@ -20,11 +20,11 @@ public class DisplayPasswordText : MonoBehaviour
     /// <summary>
     /// 正誤の判定するクラス
     /// </summary>
+    [SerializeField]
     private PasswordChecker checker;
 
     void Awake()
     {
-        checker = new(_galleryApp);
         _displayText = GetComponent<TextMeshProUGUI>();
         PasswordInput.OnClicked += AddPassword;
         PasswordChecker.OnReset += ResetText;

@@ -1,6 +1,11 @@
 using UnityEngine;
 
-public class GalleryPassword
+public interface IState
+{
+    public bool IsCorrect(string answer);
+}
+
+public class MemoPassword : IState
 {
     /// <summary>
     /// 正しい答え
@@ -52,5 +57,5 @@ public class GalleryPassword
     /// </summary>
     /// <param name="answer">回答</param>
     /// <returns>全部一致だったらtrue</returns>
-    public bool CheckAnswer(string answer) => answer == _correct;
+    public bool IsCorrect(string answer) => answer == _correct;
 }

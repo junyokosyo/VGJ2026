@@ -14,38 +14,50 @@ public class GalleryApp : AppBase
     private Transform _novemberparent;
     [SerializeField]
     private Transform _decemberparent;
+    [SerializeField]
+    private AnswerDatabase _dataBase;
     /// <summary>
     /// ギャラリー
     /// </summary>
     [SerializeField]
     private GameObject _gallery;
+    
+    void Start()
+    {
+        SetImages();
+    }
 
     /// <summary>
     /// ランダムで選ばれた枚数分生成
     /// </summary>
     public void SetImages()
     {
-        int september = PasswordManager.Instance.GalleryPassword.September;
-        int october = PasswordManager.Instance.GalleryPassword.October;
-        int november = PasswordManager.Instance.GalleryPassword.November;
-        int december = PasswordManager.Instance.GalleryPassword.December;
+        int september = PasswordManager.Instance.MemoPassword.September;
+        int october = PasswordManager.Instance.MemoPassword.October;
+        int november = PasswordManager.Instance.MemoPassword.November;
+        int december = PasswordManager.Instance.MemoPassword.December;
         int[] months = { september, october, november, december };
         Transform parent = null;
+        int month = 0;
 
         for(int i = 0;i < months.Length; i++)
         {
             switch (i)
             {
                 case 0:
+                    month = 9;
                     parent = _septemberparent;
                     break;
                 case 1:
+                    month = 10;
                     parent = _octoberparent;
                     break;
                 case 2:
+                    month = 11;
                     parent = _novemberparent;
                     break;
                 case 3:
+                    month = 12;
                     parent = _decemberparent;
                     break;
             }
@@ -54,6 +66,17 @@ public class GalleryApp : AppBase
             {
                 GameObject gallery = Instantiate(_gallery,parent);
                 Image image = gallery.GetComponent<Image>();
+
+                foreach(var confirmed in _dataBase.confirmedSprites)
+                {
+                    if (confirmed.Month == month)
+                    {
+                        if (j-1 < confirmed.Sprite.Count)
+                        {
+                            image.sprite = confirmed.Sprite[j-1];
+                        }
+                    }
+                }
             }
         }
     }

@@ -33,3 +33,7 @@ MonoBehaviour:
     ID: 9
   - ImageSprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
     ID: 0
+  confirmedSprites:
+  - Month: 1
+    Sprite: []
+  Messages: []
