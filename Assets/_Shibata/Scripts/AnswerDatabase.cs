@@ -7,7 +7,7 @@ using Randam = UnityEngine.Random;
 public class AnswerDatabase : ScriptableObject
 {
     public LockPassword LockPasswordAnswers;
-    public List<ButtonData> PicturePasswords; 
+    public List<ButtonData> PicturePasswords;
 }
 
 /// ロック画面のパスワード
@@ -44,7 +44,7 @@ public class LockPassword
         _selectBirthMonth = _birthMonth[Randam.Range(0, _birthMonth.Count)];
 
         string answer = _selectBirthMonth.ToString("D2") + _selectBirthDay.ToString("D2");
-        PasswordManager.Instance.AddRockAnswer(answer);
+        PasswordManager.Instance.SetCorrect(answer);
 
         _birth = _selectBirthMonth + "月" + _selectBirthDay + "日";
     }

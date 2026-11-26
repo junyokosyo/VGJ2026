@@ -2,10 +2,13 @@ using UnityEngine;
 
 public class PicturePassword
 {
+    public string Correct => _correct;
+
     private int _september;
     private int _october;
     private int _november;
     private int _december;
+    private string _correct;
 
     public void OnInstace()
     {
@@ -13,6 +16,11 @@ public class PicturePassword
         _october = Random.Range(3, 10);
         _november = Random.Range(3, 10);
         _december = Random.Range(3, 10);
+
+        _correct = _october.ToString("D2") + 
+            _september.ToString("D2") + 
+            _december.ToString("D2") + 
+            _november.ToString("D2");
     }
 
     /// <summary>

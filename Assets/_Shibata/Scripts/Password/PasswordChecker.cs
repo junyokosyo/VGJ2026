@@ -9,15 +9,20 @@ public class PasswordChecker
         switch (PasswordManager.Instance.PuzzleType)
         {
             case PuzzleType.Lock:
-                if (text == PasswordManager.Instance.Answer)
+                if (text == PasswordManager.Instance.Correct)
                 {
                     PasswordManager.Instance.ChangeType(PuzzleType.Picture);
+                    PasswordManager.Instance.SetCorrect(PasswordManager.Instance.PicturrePassword.Correct);
                     OnReset?.Invoke();
                 }
                 else OnReset?.Invoke();
                 break;
             case PuzzleType.Picture:
-                UnityEngine.Debug.Log("クリア");
+                if (PasswordManager.Instance.PicturrePassword.CheckAnswer(PasswordManager.Instance.Correct))
+                {
+                    UnityEngine.Debug.Log("クリア");
+                }
+                else OnReset?.Invoke();
                 break;
         }
     }
