@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GalleryApp : AppBase
 {
@@ -19,15 +20,10 @@ public class GalleryApp : AppBase
     [SerializeField]
     private GameObject _gallery;
 
-    protected override void OnOpened()
-    {
-        SetImages();
-    }
-
     /// <summary>
     /// ランダムで選ばれた枚数分生成
     /// </summary>
-    void SetImages()
+    public void SetImages()
     {
         int september = PasswordManager.Instance.GalleryPassword.September;
         int october = PasswordManager.Instance.GalleryPassword.October;
@@ -57,6 +53,7 @@ public class GalleryApp : AppBase
             for (int j = 1; j <= months[i]; j++)
             {
                 GameObject gallery = Instantiate(_gallery,parent);
+                Image image = gallery.GetComponent<Image>();
             }
         }
     }

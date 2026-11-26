@@ -3,7 +3,7 @@ using UnityEngine;
 public enum PuzzleType
 {
     Lock,
-    Picture
+    Gallery
 }
 
 /// <summary>
