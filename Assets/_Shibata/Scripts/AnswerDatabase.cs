@@ -9,11 +9,40 @@ public class AnswerDatabase : ScriptableObject
     /// <summary>
     /// ロック時のパスワード
     /// </summary>
+    [Header("ロック画面のパスワード")]
     public LockPassword LockPasswordAnswers;
     /// <summary>
     /// 入力アイコンたち
     /// </summary>
     public List<ButtonData> PicturePasswords;
+    /// <summary>
+    /// 各月確定出だしたいSprite
+    /// </summary>
+    [Header("各月確定のSprite")]
+    public List<ConfirmedSprite> confirmedSprites;
+
+    /// <summary>
+    /// メモに書いてあるやつ
+    /// </summary>
+    [Header("メモアプリに記入されていること")]
+    public List<Message> Messages;
+}
+
+[System.Serializable]
+public class Message
+{
+    [Header("タイトル番号")]
+    public int ID;
+    [Header("シナリオ")]
+    public string Story;
+}
+
+[System.Serializable]
+public class ConfirmedSprite
+{
+    [Header("月"), Range(1, 12)]
+    public int Month;
+    public List<Sprite> Sprite;
 }
 
 /// ロック画面のパスワード

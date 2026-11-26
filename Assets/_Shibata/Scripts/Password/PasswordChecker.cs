@@ -1,18 +1,40 @@
 using System;
+using UnityEngine;
 
-public class PasswordChecker
+public class PasswordChecker : MonoBehaviour
 {
-    public PasswordChecker(GalleryApp galleryApp)
-    {
-        _galleryApp = galleryApp;
-    }
-
     /// <summary>
     /// 自分の回答をリセット時
     /// </summary>
     public static event Action OnReset;
+    public IState Locker => _locker;
+    public IState Memo => _memo;
+    public IState Messaging => _messaging;
 
-    private GalleryApp _galleryApp;
+    private IState _locker = new LockerPassword();
+    private IState _memo = new MemoPassword();
+    private IState _messaging = new MessagingPassward();
+    private IState _nowCurrent;
+
+    /// <summary>
+    /// 今のStateの切替
+    /// </summary>
+    /// <param name="next">次のState</param>
+    public void ChangeState(AppId id)
+    {
+        switch (id)
+        {
+            case AppId.Memo:
+                _nowCurrent = _memo;
+                break;
+            case AppId.Messaging:
+                _nowCurrent = _messaging;
+                break;
+            case AppId.BirdModel:
+                _nowCurrent = _locker;
+                break;
+        }
+    }
 
     /// <summary>
     /// 自分の回答が正しいか
@@ -20,30 +42,27 @@ public class PasswordChecker
     /// <param name="text">自分の回答</param>
     public void CheckAnswer(string text)
     {
-        switch (PasswordManager.Instance.PuzzleType)
+        if (_nowCurrent.IsCorrect(text))
         {
-            case PuzzleType.Lock:
-                if (text == PasswordManager.Instance.Correct)
-                {
-                    UnityEngine.Debug.Log("Clear");
-                    PasswordManager.Instance.ChangeType(PuzzleType.Gallery);
-                    PasswordManager.Instance.InstancePassword();
-                    PasswordManager.Instance.SetCorrect(PasswordManager.Instance.GalleryPassword.Correct);
-                    OnReset?.Invoke();
-                    _galleryApp.SetImages();
-                }
-                else OnReset?.Invoke();
-                break;
-            case PuzzleType.Gallery:
-                if (PasswordManager.Instance.GalleryPassword.CheckAnswer(text))
-                {
-                    UnityEngine.Debug.Log("クリア");
-                }
-                else
-                {
-                    OnReset?.Invoke();
-                }
-                break;
+            Debug.Log("クリア");
         }
+        else
+        {
+            OnReset?.Invoke();
+        }
+
+        //switch (PasswordManager.Instance.PuzzleType)
+        //{
+        //    case PuzzleType.Gallery:
+        //        if (PasswordManager.Instance.MemoPassword.IsCorrect(text))
+        //        {
+        //            UnityEngine.Debug.Log("クリア");
+        //        }
+        //        else
+        //        {
+        //            OnReset?.Invoke();
+        //        }
+        //        break;
+        //}
     }
 }
