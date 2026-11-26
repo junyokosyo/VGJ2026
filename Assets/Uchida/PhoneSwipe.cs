@@ -249,6 +249,9 @@ public class PhoneSwipe : MonoBehaviour
 
         _fadeInPanel.color = _color;
     }
+    /// <summary>
+    /// マウスをクリックしたときにUIとかぶっているかを確認している。
+    /// </summary>
     private bool IsInsideFrontScreen(Vector2 screenPosition)
     {
         Camera cam = null;
