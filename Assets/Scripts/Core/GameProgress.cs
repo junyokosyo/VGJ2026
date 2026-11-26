@@ -3,7 +3,8 @@ using System.Collections.Generic;
 
 /// <summary>
 /// 1プレイ分の進行状況を保持する。
-/// 再起動しても消えず、新しくゲームを始めたとき（Reset）だけ消える。
+/// ・やり直し（電池切れで再起動）：消えない
+/// ・リセット（新しくゲームを始める）：Reset で消える
 /// どのスクリプトからでも GameProgress.SetFlag(...) のように直接呼べる。
 /// </summary>
 public static class GameProgress
@@ -16,6 +17,13 @@ public static class GameProgress
     /// static なイベントなので、登録した側は OnDestroy で必ず解除すること
     /// </summary>
     public static event Action<ProgressFlag> OnFlagSet;
+
+    /// <summary>
+    /// リセットされたとき（新しいゲームが始まったとき）。
+    /// 暗号の抽選など「リセットのときだけやること」はこれを受け取って行う。
+    /// static なイベントなので、登録した側は OnDestroy で必ず解除すること
+    /// </summary>
+    public static event Action OnReset;
 
     /// <summary>
     /// 今回のプレイで何回起動したか（1回目の起動で1）
@@ -36,6 +44,7 @@ public static class GameProgress
         _readMessageIds.Clear();
         BootCount = 0;
         Ending = EndingType.Normal;
+        OnReset?.Invoke();
     }
 
     /// <summary>
