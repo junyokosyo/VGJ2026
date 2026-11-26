@@ -39,8 +39,8 @@ public class LockPassword
             BirthDay.Add(i);
         }
 
-        _selectBirthDay = BirthDay[Randam.Range(0, BirthDay.Count - 1)];
-        _selectBirthMonth = BirthMonth[Randam.Range(0, BirthMonth.Count - 1)];
+        _selectBirthDay = BirthDay[Randam.Range(0, BirthDay.Count)];
+        _selectBirthMonth = BirthMonth[Randam.Range(0, BirthMonth.Count)];
     }
 }
 
@@ -49,7 +49,7 @@ public class LockPassword
 public class PicturePassword
 {
     [Header("数字の画像")]
-    public Image Image;
+    public Sprite ImageSprite;
     [Header("画像の数字")]
     public int ID;
 }
