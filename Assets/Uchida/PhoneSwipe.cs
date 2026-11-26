@@ -105,8 +105,15 @@ public class PhoneSwipe : MonoBehaviour
     /// </summary>
     private void StartSwipe(Vector2 position)
     {
-        _startPosition = position;
-        _isTouching = true;
+        if (!IsInsideFrontScreen(position))
+        {
+            return;
+        }
+        else
+        {
+            _startPosition = position;
+            _isTouching = true;
+        }    
     }
 
     /// <summary>
@@ -242,4 +249,14 @@ public class PhoneSwipe : MonoBehaviour
 
         _fadeInPanel.color = _color;
     }
+    private bool IsInsideFrontScreen(Vector2 screenPosition)
+    {
+        Camera cam = null;
+        if (_canvas != null && _canvas.renderMode != RenderMode.ScreenSpaceOverlay)
+        {
+            cam = _canvas.worldCamera;
+        }
+        return RectTransformUtility.RectangleContainsScreenPoint(_frontScreen, screenPosition, cam);
+    }
 }
+
