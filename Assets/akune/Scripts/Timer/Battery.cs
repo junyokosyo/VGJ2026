@@ -55,6 +55,23 @@ public class Battery : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// バッテリーを満タンに戻す（再起動のときに Timer から呼ばれる）
+    /// </summary>
+    public void ResetBattery()
+    {
+        //消えるアニメーションの途中のものを止める
+        StopAllCoroutines();
+
+        foreach (Image segment in _battery)
+        {
+            segment.fillAmount = 1f;
+            segment.gameObject.SetActive(true);
+        }
+
+        _previousFilledCount = 0;
+    }
+
     private void DecreaseBattery(int decreaseCount)
     {
         //バッテリーを減らし終わった時にループを抜け出すためのカウンター
