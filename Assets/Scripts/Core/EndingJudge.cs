@@ -1,33 +1,22 @@
 /// <summary>
-/// 進行状況からエンディングを決める
+/// エンディングを決める（仕様書 v0.2 の6章）。
+/// どのエンディングも Messaging で妻に送る返事で決まる
 /// </summary>
 public static class EndingJudge
 {
     /// <summary>
-    /// 今の進行状況でゲームを終えたときのエンディングを返す。
-    /// ※「履歴と鳥の数字は見つけたがロッカーは開けていない」場合は仕様が未定のため、いったん Memo End にしている
+    /// 妻に送った番号からエンディングを決める（手紙の裏の番号と同じなら True、違えば Memo）
     /// </summary>
-    public static EndingType Judge()
+    public static EndingType JudgeSentNumber(string sentNumber)
     {
-        bool hasHistory = GameProgress.HasFlag(ProgressFlag.HiddenHistoryUnlocked);
-        bool hasBirdNumber = GameProgress.HasFlag(ProgressFlag.BirdNumberFound);
-        bool hasOpenedLocker = GameProgress.HasFlag(ProgressFlag.LockerOpened);
+        return sentNumber == GameProgress.Codes.LockerPassword ? EndingType.True : EndingType.Memo;
+    }
 
-        if (hasHistory && hasBirdNumber && hasOpenedLocker)
-        {
-            return EndingType.True;
-        }
-
-        if (hasHistory)
-        {
-            return EndingType.Memo;
-        }
-
-        if (hasBirdNumber)
-        {
-            return EndingType.Bird;
-        }
-
-        return EndingType.Normal;
+    /// <summary>
+    /// 最初からある選択肢「何も分からなかった。」をまだ選べるか（隠された履歴を開くと消える）
+    /// </summary>
+    public static bool CanChooseNormalEnd()
+    {
+        return !GameProgress.HasFlag(ProgressFlag.HiddenHistoryUnlocked) && GameProgress.Ending == EndingType.None;
     }
 }

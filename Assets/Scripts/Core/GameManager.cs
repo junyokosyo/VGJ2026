@@ -4,10 +4,11 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 /// <summary>
-/// ゲーム全体の流れを管理する。
-/// 起動 → 30秒で電源オフ → 電源ボタンで再起動（やり直し）→ …をくり返し、調査を終えたらエンディングへ進む。
-/// ・やり直し（電池切れ）：進行状況も暗号もそのまま。ロック画面から再開
-/// ・リセット（ゲーム終了・タイトルへ戻る）：次に InGame が始まるときに進行状況を消し、暗号を抽選し直す
+/// ゲーム全体の流れを管理する（仕様書 v0.2）。
+/// 起動 → 40秒で電源オフ →「もう一度起動する」で再起動（やり直し）→ …をくり返し、Messaging の返事でエンディングへ進む。
+/// ・やり直し（電池切れ）：進行状況も暗証番号もそのまま。ホーム画面から再開し、再起動の回数が1増える
+/// ・新しいゲーム（「最初からやり直す」「はじめから遊ぶ」）：進行状況を消し、暗証番号を抽選し直す
+/// ・ページを開き直す：保存データの続きから
 /// </summary>
 public class GameManager : MonoBehaviour
 {
@@ -17,15 +18,17 @@ public class GameManager : MonoBehaviour
     [Header("参照")]
     [SerializeField] private Timer _timer;
 
-    [Header("ゲーム開始と同時に起動するか（false なら電源ボタン待ちから始まる）")]
+    [Header("タイトルを通さずにすぐ起動するか（タイトル画面ができるまでのテスト用）")]
     [SerializeField] private bool _isBootOnStart = true;
 
     [Header("演出の待ち時間（秒）")]
     [SerializeField] private float _bootDelay = 0.5f;
-    [SerializeField] private float _powerOffDelay = 1.0f;
+    [SerializeField] private float _powerOffDelay = 0.64f;
     [SerializeField] private float _endingDelay = 1.0f;
 
     private PhoneState _currentState = PhoneState.PoweredOff;
+    private bool _isPausedByRequest;
+    private bool _isPausedByApplication;
 
     /// <summary>
     /// 今のスマホの状態
@@ -33,38 +36,36 @@ public class GameManager : MonoBehaviour
     public PhoneState CurrentState => _currentState;
 
     /// <summary>
-    /// 起動の演出が始まったとき（起動ロゴなどを出す）
+    /// 起動の演出が始まったとき
     /// </summary>
     public event Action OnBootStarted;
 
     /// <summary>
-    /// 起動が終わり操作できるようになったとき（ロック画面を出す）
+    /// 起動が終わり操作できるようになったとき（ホーム画面を出す）
     /// </summary>
     public event Action OnBooted;
 
     /// <summary>
-    /// 30秒たって電源が落ちる演出が始まったとき
+    /// 40秒たって電源が落ちる演出が始まったとき（ブラウン管の演出・BGM をぷつんと止める）
     /// </summary>
     public event Action OnPowerOffStarted;
 
     /// <summary>
-    /// 電源が落ちきったとき（電源ボタンの画面を出す）
+    /// 電源が落ちきったとき（電池切れの画面を出す）
     /// </summary>
     public event Action OnPoweredOff;
 
     /// <summary>
-    /// 調査を終えたとき（引数：到達したエンディング）
+    /// エンディングに入ったとき（引数：エンディングの種類）
     /// </summary>
     public event Action<EndingType> OnGameEnded;
 
     /// <summary>
-    /// 新しいゲームとしてリセットする（進行状況を消し、OnReset で暗号の抽選などを促す）。
-    /// ゲーム終了時やタイトルへ戻るときではなく、ここ（次のゲームの開始時）で消す。
-    /// 終了時に消すと、Result シーンでエンディングの種類が読めなくなるため
+    /// 保存データを読み込む（なければ新しいゲームになる）
     /// </summary>
     private void Awake()
     {
-        GameProgress.Reset();
+        GameProgress.Load();
     }
 
     /// <summary>
@@ -78,7 +79,7 @@ public class GameManager : MonoBehaviour
 
         if (_isBootOnStart)
         {
-            Boot();
+            StartFromTitle();
         }
         else
         {
@@ -98,9 +99,19 @@ public class GameManager : MonoBehaviour
     }
 
     /// <summary>
-    /// スマホを起動する。電源ボタンから呼ぶ。電源が切れているときだけ動く
+    /// アプリが裏に回ったら時間を止める（仕様書 3-1「ページが裏に回っているあいだ」）。
+    /// WebGL ではタブが裏に回ると Unity 自体の更新が止まるので、そちらでも時間は進まない
     /// </summary>
-    public void Boot()
+    private void OnApplicationPause(bool isPaused)
+    {
+        _isPausedByApplication = isPaused;
+        ApplyTimerState();
+    }
+
+    /// <summary>
+    /// タイトルでスマホを上にドラッグしたときに呼ぶ。再起動の回数は増えない
+    /// </summary>
+    public void StartFromTitle()
     {
         if (_currentState != PhoneState.PoweredOff)
         {
@@ -111,68 +122,79 @@ public class GameManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 30秒の時間制限を一時停止・再開する。
-    /// どの操作中に止めるかは未定なので、決まったら各アプリからこれを呼ぶ
+    /// 電池切れの画面の「もう一度起動する」から呼ぶ。再起動の回数が1増える
     /// </summary>
-    public void SetTimerPaused(bool isPaused)
+    public void Boot()
     {
-        if (_currentState != PhoneState.Running)
+        if (_currentState != PhoneState.PoweredOff)
         {
             return;
         }
 
-        _timer.SetTimerIsActive(!isPaused);
+        GameProgress.AddReboot();
+        StartCoroutine(BootRoutine());
     }
 
     /// <summary>
-    /// 調査を終えてエンディングへ進む（鳥を妻に託す、調査を終える、などから呼ぶ）
+    /// 40秒の時間制限を一時停止・再開する（制作ツールの「時間制限を止める」など）
     /// </summary>
-    public void EndGame()
+    public void SetTimerPaused(bool isPaused)
     {
-        if (_currentState == PhoneState.Ended)
+        _isPausedByRequest = isPaused;
+        ApplyTimerState();
+    }
+
+    /// <summary>
+    /// エンディングへ進む。時間はここで止まる（仕様書 3-1「スマホの外の場面」）。
+    /// Normal End は「何も分からなかった。」を選んだとき、True / Memo End は番号を送ったあと（GameProgress.SetSentNumber の後）に呼ぶ
+    /// </summary>
+    public void EndGame(EndingType ending)
+    {
+        if (_currentState == PhoneState.Ended || ending == EndingType.None)
         {
             return;
         }
 
         StopAllCoroutines();
         _currentState = PhoneState.Ended;
-        _timer.SetTimerIsActive(false);
+        ApplyTimerState();
 
-        EndingType ending = EndingJudge.Judge();
         GameProgress.SetEnding(ending);
+        GameProgress.SetFlag(ProgressFlag.Ended);
         OnGameEnded?.Invoke(ending);
 
-        StartCoroutine(LoadEndingScene());
+        StartCoroutine(LoadSceneAfterDelay(EndingSceneName, _endingDelay));
     }
 
     /// <summary>
-    /// ゲームを中断してタイトルへ戻る（メニューの「タイトルへ」などから呼ぶ）。
-    /// 進行状況は、次にゲームを始めたときにリセットされる
+    /// 「最初からやり直す」→ 確認で「やり直す」を押したときに呼ぶ。
+    /// 進行状況を消して暗証番号を作り直し、タイトルへ戻る
     /// </summary>
     public void ReturnToTitle()
     {
         StopAllCoroutines();
         _currentState = PhoneState.Ended;
-        _timer.SetTimerIsActive(false);
+        ApplyTimerState();
 
-        // TODO: SceneController（フェードつき）が完成したら、そちら経由に差し替える
+        GameProgress.NewGame();
+
+        // TODO: タイトルを InGame の中の状態にしたら、シーンを読み込まずにタイトルの演出へ切り替える
         SceneManager.LoadScene(TitleSceneName);
     }
 
     /// <summary>
-    /// 起動の演出を待ってから、30秒のカウントを最初から始める
+    /// 起動の演出を待ってから、40秒のカウントを最初から始める
     /// </summary>
     private IEnumerator BootRoutine()
     {
         _currentState = PhoneState.Booting;
-        GameProgress.CountBoot();
         OnBootStarted?.Invoke();
 
         yield return new WaitForSeconds(_bootDelay);
 
         _currentState = PhoneState.Running;
         _timer.ResetTimer();
-        _timer.SetTimerIsActive(true);
+        ApplyTimerState();
         OnBooted?.Invoke();
     }
 
@@ -190,12 +212,12 @@ public class GameManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 電源が落ちる演出を待ってから、電源ボタン待ちにする（進行状況は消さない）
+    /// 電源が落ちる演出（ブラウン管）を待ってから、電池切れの画面にする（進行状況は消さない）
     /// </summary>
     private IEnumerator PowerOffRoutine()
     {
         _currentState = PhoneState.PoweringOff;
-        _timer.SetTimerIsActive(false);
+        ApplyTimerState();
         OnPowerOffStarted?.Invoke();
 
         yield return new WaitForSeconds(_powerOffDelay);
@@ -205,13 +227,22 @@ public class GameManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 演出を待ってからエンディングのシーンへ切り替える
+    /// 状態と一時停止の理由から、タイマーを動かすか決める
     /// </summary>
-    private IEnumerator LoadEndingScene()
+    private void ApplyTimerState()
     {
-        yield return new WaitForSeconds(_endingDelay);
+        bool isActive = _currentState == PhoneState.Running && !_isPausedByRequest && !_isPausedByApplication;
+        _timer.SetTimerIsActive(isActive);
+    }
+
+    /// <summary>
+    /// 指定した秒数を待ってからシーンを切り替える
+    /// </summary>
+    private IEnumerator LoadSceneAfterDelay(string sceneName, float delay)
+    {
+        yield return new WaitForSeconds(delay);
 
         // TODO: SceneController（フェードつき）が完成したら、そちら経由に差し替える
-        SceneManager.LoadScene(EndingSceneName);
+        SceneManager.LoadScene(sceneName);
     }
 }

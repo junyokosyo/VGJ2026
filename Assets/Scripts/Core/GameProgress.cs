@@ -1,16 +1,18 @@
 using System;
-using System.Collections.Generic;
+using UnityEngine;
 
 /// <summary>
-/// 1プレイ分の進行状況を保持する。
-/// ・やり直し（電池切れで再起動）：消えない
-/// ・リセット（新しくゲームを始める）：Reset で消える
-/// どのスクリプトからでも GameProgress.SetFlag(...) のように直接呼べる。
+/// 1プレイ分の進行状況を保持し、PlayerPrefs に保存する（仕様書 v0.2 の3-2）。
+/// ・やり直し（電池切れ →「もう一度起動する」）：消えない
+/// ・ページを開き直す：保存データから読み込んで続きから
+/// ・新しいゲーム（「最初からやり直す」「はじめから遊ぶ」）：NewGame で消して、暗証番号を抽選し直す
+/// どのスクリプトからでも GameProgress.SetFlag(...) のように直接呼べる。値を変えると自動で保存する
 /// </summary>
 public static class GameProgress
 {
-    private static readonly HashSet<ProgressFlag> _flags = new();
-    private static readonly HashSet<string> _readMessageIds = new();
+    private const string SaveKey = "nosubject-save";
+
+    private static SaveData _data;
 
     /// <summary>
     /// フラグが新しく立ったとき（引数：立ったフラグ）。
@@ -19,32 +21,131 @@ public static class GameProgress
     public static event Action<ProgressFlag> OnFlagSet;
 
     /// <summary>
-    /// リセットされたとき（新しいゲームが始まったとき）。
-    /// 暗号の抽選など「リセットのときだけやること」はこれを受け取って行う。
+    /// 新しいゲームが始まったとき。暗証番号の抽選はこれを受け取って行い、SetCodes で入れる。
     /// static なイベントなので、登録した側は OnDestroy で必ず解除すること
     /// </summary>
     public static event Action OnReset;
 
     /// <summary>
-    /// 今回のプレイで何回起動したか（1回目の起動で1）
+    /// その回の暗証番号の元（写真の枚数・メモの数字・手紙の番号）
     /// </summary>
-    public static int BootCount { get; private set; }
+    public static PuzzleCodes Codes => Data.Codes;
 
     /// <summary>
-    /// 到達したエンディング（OutGame シーンで表示に使う）
+    /// 再起動した回数（新しいゲームで0。「もう一度起動する」で1増える）
     /// </summary>
-    public static EndingType Ending { get; private set; }
+    public static int RebootCount => Data.RebootCount;
 
     /// <summary>
-    /// 進行状況をすべて消す。新しくゲームを始めるときに GameManager が呼ぶ
+    /// たどり着いたエンディング（まだなら None）
     /// </summary>
-    public static void Reset()
+    public static EndingType Ending => Enum.TryParse(Data.Ending, out EndingType ending) ? ending : EndingType.None;
+
+    /// <summary>
+    /// 妻に送った番号（まだなら空）
+    /// </summary>
+    public static string SentNumber => Data.SentNumber;
+
+    /// <summary>
+    /// メモの並び順（id の並び。a=9月 b=10月 c=11月 d=12月）
+    /// </summary>
+    public static string[] MemoOrder => (string[])Data.MemoOrder.Clone();
+
+    /// <summary>
+    /// Email で開いていたタブ（"inbox" か "drafts"）
+    /// </summary>
+    public static string EmailTab => Data.EmailTab;
+
+    /// <summary>
+    /// 名前を記録したエンディング（まだなら空）
+    /// </summary>
+    public static string RecordedEnding => Data.RecordedEnding;
+
+    /// <summary>
+    /// 読み込み前に触られても困らないよう、必要になった時点で読み込む
+    /// </summary>
+    private static SaveData Data
     {
-        _flags.Clear();
-        _readMessageIds.Clear();
-        BootCount = 0;
-        Ending = EndingType.Normal;
+        get
+        {
+            if (_data == null)
+            {
+                Load();
+            }
+
+            return _data;
+        }
+    }
+
+    /// <summary>
+    /// 保存データを読み込む。保存がない・形式が古い・暗証番号が入っていないときは新しいゲームにする。
+    /// GameManager が起動時に呼ぶ（呼ばなくても、最初に値を読んだときに自動で読み込む）
+    /// </summary>
+    public static void Load()
+    {
+        _data = null;
+        string json = PlayerPrefs.GetString(SaveKey, "");
+
+        if (!string.IsNullOrEmpty(json))
+        {
+            try
+            {
+                SaveData loaded = JsonUtility.FromJson<SaveData>(json);
+
+                if (loaded != null && loaded.Version == SaveData.CurrentVersion)
+                {
+                    _data = loaded;
+                }
+            }
+            catch (ArgumentException)
+            {
+                Debug.LogWarning("[GameProgress] 保存データが壊れていたので、新しいゲームにします");
+            }
+        }
+
+        if (_data == null)
+        {
+            NewGame();
+            return;
+        }
+
+        if (!_data.Codes.IsValid)
+        {
+            // 前回、抽選が終わる前に閉じられた場合など
+            OnReset?.Invoke();
+            WarnIfCodesInvalid();
+        }
+    }
+
+    /// <summary>
+    /// 新しいゲームにする（進行状況をすべて消し、OnReset で暗証番号の抽選を頼む）。
+    /// 「最初からやり直す」「はじめから遊ぶ」から呼ぶ
+    /// </summary>
+    public static void NewGame()
+    {
+        _data = new SaveData();
+        Save();
         OnReset?.Invoke();
+        WarnIfCodesInvalid();
+    }
+
+    /// <summary>
+    /// 暗証番号の元を入れる（柴田さんの抽選から呼ぶ）
+    /// </summary>
+    public static void SetCodes(PuzzleCodes codes)
+    {
+        if (codes == null || !codes.IsValid)
+        {
+            Debug.LogError("[GameProgress] 暗証番号が仕様どおりではありません（写真3〜9枚・数字0〜9・手紙4桁・3つのパスコードが別々）");
+            return;
+        }
+
+        Data.Codes = codes;
+        Save();
+
+#if UNITY_EDITOR
+        Debug.Log($"[GameProgress] 今回の答え Memo:{codes.MemoPassword} 履歴:{codes.HistoryPassword} ロッカー:{codes.LockerPassword}");
+#endif
     }
 
     /// <summary>
@@ -52,10 +153,16 @@ public static class GameProgress
     /// </summary>
     public static void SetFlag(ProgressFlag flag)
     {
-        if (_flags.Add(flag))
+        string key = flag.ToString();
+
+        if (Data.Flags.Contains(key))
         {
-            OnFlagSet?.Invoke(flag);
+            return;
         }
+
+        Data.Flags.Add(key);
+        Save();
+        OnFlagSet?.Invoke(flag);
     }
 
     /// <summary>
@@ -63,38 +170,85 @@ public static class GameProgress
     /// </summary>
     public static bool HasFlag(ProgressFlag flag)
     {
-        return _flags.Contains(flag);
+        return Data.Flags.Contains(flag.ToString());
     }
 
     /// <summary>
-    /// メッセージを読んだことを記録する（id は会話データ側で決める）
+    /// 再起動の回数を1増やす（「もう一度起動する」を押したときに GameManager が呼ぶ）
     /// </summary>
-    public static void MarkMessageRead(string messageId)
+    public static void AddReboot()
     {
-        _readMessageIds.Add(messageId);
+        Data.RebootCount++;
+        Save();
     }
 
     /// <summary>
-    /// メッセージを読んだことがあるか
+    /// メモの並び順を保存する（Memo で並べ替えたときに呼ぶ）
     /// </summary>
-    public static bool IsMessageRead(string messageId)
+    public static void SetMemoOrder(string[] order)
     {
-        return _readMessageIds.Contains(messageId);
+        if (order == null || order.Length != PuzzleCodes.MonthCount)
+        {
+            return;
+        }
+
+        Data.MemoOrder = (string[])order.Clone();
+        Save();
     }
 
     /// <summary>
-    /// 起動回数を1増やす。GameManager だけが呼ぶ
+    /// Email のタブを保存する
     /// </summary>
-    public static void CountBoot()
+    public static void SetEmailTab(string tab)
     {
-        BootCount++;
+        Data.EmailTab = tab;
+        Save();
     }
 
     /// <summary>
-    /// 到達したエンディングを記録する。GameManager だけが呼ぶ
+    /// 妻に番号を送ったことと、そのエンディングを記録する（Messaging から呼ぶ）
+    /// </summary>
+    public static void SetSentNumber(string sentNumber)
+    {
+        Data.SentNumber = sentNumber;
+        SetEnding(EndingJudge.JudgeSentNumber(sentNumber));
+    }
+
+    /// <summary>
+    /// たどり着いたエンディングを記録する
     /// </summary>
     public static void SetEnding(EndingType ending)
     {
-        Ending = ending;
+        Data.Ending = ending.ToString();
+        Save();
+    }
+
+    /// <summary>
+    /// 名前を記録したエンディングを覚える（記録画面から呼ぶ）
+    /// </summary>
+    public static void SetRecordedEnding(EndingType ending)
+    {
+        Data.RecordedEnding = ending.ToString();
+        Save();
+    }
+
+    /// <summary>
+    /// 今の状態を PlayerPrefs に書き込む（WebGL ではブラウザの中に保存される）
+    /// </summary>
+    private static void Save()
+    {
+        PlayerPrefs.SetString(SaveKey, JsonUtility.ToJson(_data));
+        PlayerPrefs.Save();
+    }
+
+    /// <summary>
+    /// 抽選が行われなかったときに知らせる（柴田さんの抽選がまだシーンにないときなど）
+    /// </summary>
+    private static void WarnIfCodesInvalid()
+    {
+        if (!_data.Codes.IsValid)
+        {
+            Debug.LogWarning("[GameProgress] 暗証番号がまだ抽選されていません。OnReset を受け取って SetCodes を呼ぶ仕組みが必要です");
+        }
     }
 }

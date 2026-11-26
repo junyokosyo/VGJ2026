@@ -30,7 +30,7 @@ public class PhoneNavigator : MonoBehaviour
     /// </summary>
     private void Start()
     {
-        _gameManager.OnBooted += ShowLockScreen;
+        _gameManager.OnBooted += ShowHomeOnBoot;
         _gameManager.OnPoweredOff += ShowPowerOffScreen;
 
         foreach (AppBase app in _apps)
@@ -48,7 +48,7 @@ public class PhoneNavigator : MonoBehaviour
     {
         if (_gameManager != null)
         {
-            _gameManager.OnBooted -= ShowLockScreen;
+            _gameManager.OnBooted -= ShowHomeOnBoot;
             _gameManager.OnPoweredOff -= ShowPowerOffScreen;
         }
     }
@@ -105,15 +105,13 @@ public class PhoneNavigator : MonoBehaviour
     }
 
     /// <summary>
-    /// 起動が終わったらロック画面を出す。
-    /// スワイプでロック画面をずらしたときに下からホーム画面が見えるよう、ホーム画面も後ろに表示しておく
-    /// （ヒエラルキーで HomeScreen が LockScreen より上にあること。ロック画面がクリックを受け止めるので、アイコンは押せない）
+    /// 起動が終わったらホーム画面を出す（仕様書 v0.2：タイトルからも「もう一度起動する」からも、ロック画面を通らずにホームから始まる）。
+    /// ロック画面はタイトルの演出でだけ使う
     /// </summary>
-    private void ShowLockScreen()
+    private void ShowHomeOnBoot()
     {
         CloseCurrentApp();
-        ShowOnly(_lockScreen);
-        _homeScreen.SetActive(true);
+        ShowOnly(_homeScreen);
     }
 
     /// <summary>
