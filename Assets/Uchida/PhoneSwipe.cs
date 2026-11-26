@@ -1,6 +1,8 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Scripting;
+using UnityEngine.UI;
 
 /// <summary>
 /// スマートフォンの画面を左右にスワイプして、
@@ -10,6 +12,7 @@ public class PhoneSwipe : MonoBehaviour
 {
     [Header("画面設定")]
     [SerializeField] private RectTransform _frontScreen;
+    [SerializeField] private Image _fadeInPanel;
 
     [Header("スワイプ設定")]
     [SerializeField, Range(0.1f, 0.8f)]
@@ -19,7 +22,15 @@ public class PhoneSwipe : MonoBehaviour
     [SerializeField] private float _slideSpeed = 0.3f;
     [SerializeField] private float _returnSpeed = 0.25f;
 
+    [HideInInspector]
+    public bool IsSwiping = false;
+
     private Canvas _canvas;
+
+    private Color _color;
+
+    private float _moveLength;
+    private float _transformScale;
 
     private Vector2 _startPosition;
     private Vector2 _originalPosition;
@@ -37,12 +48,13 @@ public class PhoneSwipe : MonoBehaviour
     {
         if (_frontScreen == null)
         {
-            Debug.LogError("FrontScreenが設定されていません！");
             enabled = false;
             return;
         }
 
         _canvas = _frontScreen.GetComponentInParent<Canvas>();
+
+        _color = _fadeInPanel.color;
     }
 
     /// <summary>
@@ -50,7 +62,7 @@ public class PhoneSwipe : MonoBehaviour
     /// </summary>
     private void Start()
     {
-        _originalPosition = _frontScreen.anchoredPosition;
+        _originalPosition = _frontScreen.anchoredPosition; 
     }
 
     /// <summary>
@@ -108,9 +120,14 @@ public class PhoneSwipe : MonoBehaviour
 
         float moveX = deltaX / scale;
 
-        moveX = Mathf.Clamp(moveX, -_frontScreen.rect.width,_frontScreen.rect.width);
+        moveX = Mathf.Clamp(moveX, -_frontScreen.rect.width, _frontScreen.rect.width);
 
-        _frontScreen.anchoredPosition = _originalPosition + new Vector2(moveX, 0);
+        _moveLength = Mathf.Abs(deltaX);
+
+        _frontScreen.anchoredPosition =
+            _originalPosition + new Vector2(moveX, 0);
+
+        UpdateFadeAlpha();
     }
 
     /// <summary>
@@ -124,6 +141,8 @@ public class PhoneSwipe : MonoBehaviour
         float deltaY = position.y - _startPosition.y;
 
         float scale = _canvas != null ? _canvas.scaleFactor : 1f;
+
+        _transformScale = scale;
 
         float unlockDistance = _frontScreen.rect.width * _unlockRate * scale;
 
@@ -175,7 +194,7 @@ public class PhoneSwipe : MonoBehaviour
 
         _animationCoroutine = null;
 
-        Debug.Log("スマホのロック解除成功！");
+        IsSwiping = true;
     }
 
     /// <summary>
@@ -206,5 +225,24 @@ public class PhoneSwipe : MonoBehaviour
         _isAnimating = false;
 
         _animationCoroutine = null;
+
+        _color.a = 1f;
+        _fadeInPanel.color = _color;
+    }
+    /// <summary>
+    /// スワイプ距離に応じて透明度を変更する。
+    /// </summary>
+    private void UpdateFadeAlpha()
+    {
+        float scale = _canvas != null ? _canvas.scaleFactor : 1f;
+
+        float unlockDistance =
+            _frontScreen.rect.width * _unlockRate * scale;
+
+        float progress = Mathf.Clamp01(_moveLength / unlockDistance);
+
+        _color.a = Mathf.Lerp(1f, 0f, progress);
+
+        _fadeInPanel.color = _color;
     }
 }
