@@ -368,6 +368,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PasswordInput
   _answerDatabase: {fileID: 11400000, guid: d2da0ec5480ef8a4aaa8595e4cc4af57, type: 2}
+  _id: 0
 --- !u!4 &1278894762
 Transform:
   m_ObjectHideFlags: 0

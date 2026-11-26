@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using Image = UnityEngine.UI.Image;
 using Randam = UnityEngine.Random;
 
 /// パスワードを管理する
@@ -8,16 +7,15 @@ using Randam = UnityEngine.Random;
 public class AnswerDatabase : ScriptableObject
 {
     public LockPassword RockPasswordAnswers;
+    public List<PicturePassword> PicturePasswords; 
 }
 
 /// ロック画面のパスワード
 [System.Serializable]
 public class LockPassword
 {
-    [Header("誕生月")]
-    public List<int> BirthMonth = new();
-    [Header("誕生日")]
-    public List<int> BirthDay = new();
+    private List<int> BirthMonth = new();
+    private List<int> BirthDay = new();
 
     public int SelectBirthMonth => _selectBirthMonth;
     public int SelectBirthDay => _selectBirthDay;
@@ -44,7 +42,7 @@ public class LockPassword
     }
 }
 
-//写真のパスワード
+//ボタンのデータ
 [System.Serializable]
 public class PicturePassword
 {
