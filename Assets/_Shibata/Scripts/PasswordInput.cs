@@ -13,6 +13,7 @@ public class PasswordInput : MonoBehaviour,IPointerDownHandler
 
     public void OnPointerDown(PointerEventData data)
     {
+        //テキストに表示する処理
         Debug.Log(_id);
     }
 
