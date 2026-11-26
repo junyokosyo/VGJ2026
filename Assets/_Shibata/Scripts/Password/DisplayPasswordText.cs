@@ -15,13 +15,16 @@ public class DisplayPasswordText : MonoBehaviour
     /// 入力できる桁-1した値
     /// </summary>
     private int _max = 3;
+    [SerializeField,Header("参照")]
+    private GalleryApp _galleryApp;
     /// <summary>
     /// 正誤の判定するクラス
     /// </summary>
-    private PasswordChecker checker = new();
+    private PasswordChecker checker;
 
     void Awake()
     {
+        checker = new(_galleryApp);
         _displayText = GetComponent<TextMeshProUGUI>();
         PasswordInput.OnClicked += AddPassword;
         PasswordChecker.OnReset += ResetText;

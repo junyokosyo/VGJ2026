@@ -3,7 +3,7 @@ using UnityEngine;
 public enum PuzzleType
 {
     Lock,
-    Picture
+    Gallery
 }
 
 /// <summary>
@@ -35,7 +35,7 @@ public class PasswordManager : MonoBehaviour
     /// <summary>
     /// ギャラリーでのなぞ解きの回答
     /// </summary>
-    public PicturePassword PicturrePassword => _picturePassword;
+    public GalleryPassword GalleryPassword => _galleryPassword;
     /// <summary>
     /// 現在どの謎を解いているか
     /// </summary>
@@ -49,7 +49,7 @@ public class PasswordManager : MonoBehaviour
     private AnswerDatabase _dataBase;
     private static PasswordManager instance;
     private PuzzleType _puzzleType;
-    private PicturePassword _picturePassword = new();
+    private GalleryPassword _galleryPassword = new();
     private string _correct;
 
     /// <summary>
@@ -83,7 +83,7 @@ public class PasswordManager : MonoBehaviour
     /// </summary>
     public void InstancePassword()
     {
-        _picturePassword.OnInstace();
+        _galleryPassword.OnInstace();
     }
 
     void Awake()
