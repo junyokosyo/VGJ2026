@@ -3,30 +3,38 @@ using UnityEngine;
 
 public class DisplayPasswordText : MonoBehaviour
 {
-    private TextMeshProUGUI _text;
+    private TextMeshProUGUI _displayText;
     private string _password;
-    private int _max = 4;
+    private int _max = 3;
+    private PasswordChecker checker = new();
 
     void Awake()
     {
-        _text = GetComponent<TextMeshProUGUI>();
+        _displayText = GetComponent<TextMeshProUGUI>();
         PasswordInput.OnClicked += AddPassword;
+        PasswordChecker.OnReset += ResetText;
     }
 
     private void OnDestroy()
     {
         PasswordInput.OnClicked -= AddPassword;
+        PasswordChecker.OnReset -= ResetText;
     }
 
     void AddPassword(int value)
     {
-        if (_text.text.Length >= _max)
-        {
-            //パスワードが合っているか確かめる処理
-            return;
-        }
-
         _password += value.ToString();
-        _text.text = _password;
+        _displayText.text = _password;
+
+        if (_displayText.text.Length > _max)
+        {
+            checker.CheckAnswer(_password);
+        }
+    }
+
+    void ResetText()
+    {
+        _password = null;
+        _displayText.text = "";
     }
 }
