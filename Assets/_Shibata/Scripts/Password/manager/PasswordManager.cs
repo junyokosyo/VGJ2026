@@ -51,7 +51,7 @@ public class PasswordManager : MonoBehaviour
     private PasswordChecker _passwordChecker;
     private static PasswordManager instance;
     private PuzzleType _puzzleType;
-    private MemoPassword _memoPassword = new();
+    private MemoPassword _memoPassword;
     private string _correct;
 
     /// <summary>
@@ -101,8 +101,8 @@ public class PasswordManager : MonoBehaviour
             return;
         }
 
-        _puzzleType = PuzzleType.Gallery;
-        GenerateAnswers();
+        //_puzzleType = PuzzleType.Gallery;
+        //GenerateAnswers();
         InstancePassword();
     }
 }

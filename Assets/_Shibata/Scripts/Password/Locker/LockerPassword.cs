@@ -9,6 +9,7 @@ public class LockerPassword : IState
     {
         _randomNumber = Random.Range(1111, 10000);
         _correct = _randomNumber.ToString();
+        Debug.Log(_correct);
     }
 
     public bool IsCorrect(string answer) => answer == _correct;

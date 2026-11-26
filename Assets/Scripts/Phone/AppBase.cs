@@ -38,6 +38,7 @@ public abstract class AppBase : MonoBehaviour
     /// </summary>
     protected virtual void OnOpened()
     {
+        PasswordManager.Instance.ChangeType(_appId);
     }
 
     /// <summary>

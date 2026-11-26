@@ -21,6 +21,11 @@ public class GalleryApp : AppBase
     /// </summary>
     [SerializeField]
     private GameObject _gallery;
+    
+    void Start()
+    {
+        SetImages();
+    }
 
     /// <summary>
     /// ランダムで選ばれた枚数分生成
