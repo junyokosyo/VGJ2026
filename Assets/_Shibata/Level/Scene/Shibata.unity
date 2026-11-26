@@ -1428,6 +1428,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 604d2643b6557544dab55a2822be71fe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PasswordManager
+  _dataBase: {fileID: 11400000, guid: d2da0ec5480ef8a4aaa8595e4cc4af57, type: 2}
 --- !u!4 &1949330453
 Transform:
   m_ObjectHideFlags: 0

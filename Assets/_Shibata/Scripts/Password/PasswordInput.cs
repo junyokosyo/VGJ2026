@@ -7,8 +7,6 @@ public class PasswordInput : MonoBehaviour, IPointerDownHandler
 {
     public static Action<int> OnClicked;
 
-    [SerializeField]
-    private AnswerDatabase _answerDatabase;
     [SerializeField, Range(0, 9)]
     private int _id;
     private PicturePassword _picturePassword;
@@ -21,7 +19,7 @@ public class PasswordInput : MonoBehaviour, IPointerDownHandler
 
     void Awake()
     {
-        foreach (var data in _answerDatabase.PicturePasswords)
+        foreach (var data in PasswordManager.Instance.DataBase.PicturePasswords)
         {
             if (data.ID == _id)
             {
@@ -29,7 +27,6 @@ public class PasswordInput : MonoBehaviour, IPointerDownHandler
             }
         }
 
-        PasswordManager.Instance.SetData(_answerDatabase);
         _image = GetComponent<Image>();
         _image.sprite = _picturePassword.ImageSprite;
     }
