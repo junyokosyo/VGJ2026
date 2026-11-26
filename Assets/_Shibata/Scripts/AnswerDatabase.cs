@@ -14,8 +14,8 @@ public class AnswerDatabase : ScriptableObject
 [System.Serializable]
 public class LockPassword
 {
-    private List<int> BirthMonth = new();
-    private List<int> BirthDay = new();
+    private List<int> _birthMonth = new();
+    private List<int> _birthDay = new();
 
     public int SelectBirthMonth => _selectBirthMonth;
     public int SelectBirthDay => _selectBirthDay;
@@ -24,21 +24,21 @@ public class LockPassword
 
     public void SetBirthDay()
     {
-        BirthDay.Clear();
-        BirthMonth.Clear();
+        _birthDay.Clear();
+        _birthMonth.Clear();
 
         for (int i = 1; i <= 12; i++)
         {
-            BirthMonth.Add(i);
+            _birthMonth.Add(i);
         }
 
         for (int i = 1; i <= 28; i++)
         {
-            BirthDay.Add(i);
+            _birthDay.Add(i);
         }
 
-        _selectBirthDay = BirthDay[Randam.Range(0, BirthDay.Count)];
-        _selectBirthMonth = BirthMonth[Randam.Range(0, BirthMonth.Count)];
+        _selectBirthDay = _birthDay[Randam.Range(0, _birthDay.Count)];
+        _selectBirthMonth = _birthMonth[Randam.Range(0, _birthMonth.Count)];
     }
 }
 
