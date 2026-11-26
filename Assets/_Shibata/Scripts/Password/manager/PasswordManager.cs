@@ -35,7 +35,7 @@ public class PasswordManager : MonoBehaviour
     /// <summary>
     /// ギャラリーでのなぞ解きの回答
     /// </summary>
-    public GalleryPassword GalleryPassword => _galleryPassword;
+    public MemoPassword MemoPassword => _memoPassword;
     /// <summary>
     /// 現在どの謎を解いているか
     /// </summary>
@@ -47,18 +47,20 @@ public class PasswordManager : MonoBehaviour
 
     [SerializeField]
     private AnswerDatabase _dataBase;
+    [SerializeField]
+    private PasswordChecker _passwordChecker;
     private static PasswordManager instance;
     private PuzzleType _puzzleType;
-    private GalleryPassword _galleryPassword = new();
+    private MemoPassword _memoPassword;
     private string _correct;
 
     /// <summary>
     /// 現在解いてる謎の切替
     /// </summary>
     /// <param name="type">切り替えたいタイプ</param>
-    public void ChangeType(PuzzleType type)
+    public void ChangeType(AppId type)
     {
-        _puzzleType = type;
+        _passwordChecker.ChangeState(type);
     }
 
     /// <summary>
@@ -83,7 +85,7 @@ public class PasswordManager : MonoBehaviour
     /// </summary>
     public void InstancePassword()
     {
-        _galleryPassword.OnInstace();
+        _memoPassword.OnInstace();
     }
 
     void Awake()
@@ -99,7 +101,8 @@ public class PasswordManager : MonoBehaviour
             return;
         }
 
-        _puzzleType = PuzzleType.Lock;
-        GenerateAnswers();
+        //_puzzleType = PuzzleType.Gallery;
+        //GenerateAnswers();
+        InstancePassword();
     }
 }
