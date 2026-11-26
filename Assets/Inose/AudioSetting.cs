@@ -42,10 +42,4 @@ public class AudioSetting : MonoBehaviour
         audioMixer.GetFloat("SE", out float seVolume);
         seSlider.value = seVolume;
     }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
 }
