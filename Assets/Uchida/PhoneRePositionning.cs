@@ -10,6 +10,7 @@ using UnityEngine;
 public class PhoneRePositionning : MonoBehaviour
 {
     [SerializeField] private PhoneSwipe phoneSwipe;
+    [SerializeField] private GameObject _fadeInPanel;
     [Header("è„è∏ê›íË")]
     [SerializeField] private float _moveHeight = 3f;
     [SerializeField] private float _moveDuration = 2f;
@@ -31,9 +32,11 @@ public class PhoneRePositionning : MonoBehaviour
 
     private void Update()
     {
-        if (phoneSwipe.IsSwiping && _moveCount <= 1)
+        if (_moveCount == 0 && phoneSwipe.IsSwiping)
         {
             StartCoroutine(MoveUp());
+            _fadeInPanel.SetActive(false);
+            _moveCount++;
         }
     }
 

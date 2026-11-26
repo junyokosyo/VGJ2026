@@ -122,10 +122,9 @@ public class PhoneSwipe : MonoBehaviour
 
         moveX = Mathf.Clamp(moveX, -_frontScreen.rect.width, 0);
 
-        _moveLength = Mathf.Abs(deltaX);
+        _moveLength = Mathf.Max(0f,-deltaX);
 
-        _frontScreen.anchoredPosition =
-            _originalPosition + new Vector2(moveX, 0);
+        _frontScreen.anchoredPosition = _originalPosition + new Vector2(moveX, 0);
 
         UpdateFadeAlpha();
     }
@@ -148,11 +147,9 @@ public class PhoneSwipe : MonoBehaviour
 
         bool isHorizontal = Mathf.Abs(deltaX) > Mathf.Abs(deltaY);
 
-        if (isHorizontal && Mathf.Abs(deltaX) >= unlockDistance)
+        if (isHorizontal && -deltaX >= unlockDistance)
         {
-            float direction = Mathf.Sign(deltaX);
-
-            _animationCoroutine = StartCoroutine(SlideOut(direction));
+            _animationCoroutine = StartCoroutine(SlideOut(-1f));
         }
         else
         {
