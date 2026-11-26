@@ -27,16 +27,14 @@ public class PasswordManager : MonoBehaviour
 
     public AnswerDatabase DataBase => _dataBase;
     public PuzzleType PuzzleType => _puzzleType;
-    public string LockAnswer => _lockAnswer;
-    public string PictureAnswer => _pictureAnswer;
+    public string Answer => _answer;
 
     [SerializeField]
     private AnswerDatabase _dataBase;
     private static PasswordManager instance;
     private PuzzleType _puzzleType = PuzzleType.Lock;
     private PicturePassword _instancePassword = new();
-    private string _lockAnswer;
-    private string _pictureAnswer;
+    private string _answer;
     private int _september;
 
     public void ChangeType(PuzzleType type)
@@ -46,13 +44,7 @@ public class PasswordManager : MonoBehaviour
 
     public void AddRockAnswer(string answer)
     {
-        Debug.Log(answer);
-        _lockAnswer = answer;
-    }
-
-    public void SetPictureAnswer(string answer)
-    {
-        _pictureAnswer = answer;
+        _answer = answer;
     }
 
     public void GenerateAnswers()
