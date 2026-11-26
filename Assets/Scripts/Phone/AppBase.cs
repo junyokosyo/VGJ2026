@@ -20,6 +20,7 @@ public abstract class AppBase : MonoBehaviour
     public void Open()
     {
         gameObject.SetActive(true);
+        PasswordManager.Instance.ChangeType(_appId);
         OnOpened();
     }
 
