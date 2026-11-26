@@ -19,20 +19,23 @@ public class LockPassword
 
     public int SelectBirthMonth => _selectBirthMonth;
     public int SelectBirthDay => _selectBirthDay;
+    public string Birth => _birth;
+
     private int _selectBirthMonth;
     private int _selectBirthDay;
+    private string _birth;
 
     public void SetBirthDay()
     {
         _birthDay.Clear();
         _birthMonth.Clear();
 
-        for (int i = 1; i <= 1; i++)
+        for (int i = 1; i <= 12; i++)
         {
             _birthMonth.Add(i);
         }
 
-        for (int i = 1; i <= 2; i++)
+        for (int i = 1; i <= 28; i++)
         {
             _birthDay.Add(i);
         }
@@ -43,6 +46,7 @@ public class LockPassword
         string answer = _selectBirthMonth.ToString("D2") + _selectBirthDay.ToString("D2");
         PasswordManager.Instance.AddRockAnswer(answer);
 
+        _birth = _selectBirthMonth + "月" + _selectBirthDay + "日";
         Debug.Log(_selectBirthMonth + "月" + _selectBirthDay + "日");
     }
 }
