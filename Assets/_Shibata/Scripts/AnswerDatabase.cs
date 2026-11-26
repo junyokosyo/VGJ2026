@@ -47,7 +47,6 @@ public class LockPassword
         PasswordManager.Instance.AddRockAnswer(answer);
 
         _birth = _selectBirthMonth + "月" + _selectBirthDay + "日";
-        Debug.Log(_selectBirthMonth + "月" + _selectBirthDay + "日");
     }
 }
 

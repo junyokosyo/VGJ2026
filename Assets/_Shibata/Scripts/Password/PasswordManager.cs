@@ -30,7 +30,7 @@ public class PasswordManager : MonoBehaviour
     public AnswerDatabase DataBase => _dataBase;
     public PuzzleType PuzzleType => _puzzleType;
 
-        [SerializeField]
+    [SerializeField]
     private AnswerDatabase _dataBase;
     private static PasswordManager instance;
     private string _lockAnswer;
@@ -59,7 +59,7 @@ public class PasswordManager : MonoBehaviour
     }
 
     void Awake()
-    {
+    { 
         if (instance == null)
         {
             instance = this;

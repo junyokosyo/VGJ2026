@@ -1,7 +1,5 @@
 using System;
 using System.Diagnostics;
-using TMPro;
-using UnityEngine.UI;
 
 public class PasswordChecker
 {
@@ -20,11 +18,18 @@ public class PasswordChecker
     {
         if (text == Answer())
         {
-            //正解時の処理
+            switch(PasswordManager.Instance.PuzzleType)
+            {
+                case PuzzleType.Lock:
+                    PasswordManager.Instance.ChangeType(PuzzleType.Picture);
+                    break;
+                case PuzzleType.Picture:
+                    UnityEngine.Debug.Log("クリア");
+                    break;
+            }
         }
         else
         {
-            UnityEngine.Debug.Log(text);
             OnReset?.Invoke();
         }
     }
