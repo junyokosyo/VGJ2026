@@ -48,6 +48,6 @@ public class PicturePassword
 {
     [Header("数字の画像")]
     public Sprite ImageSprite;
-    [Header("画像の数字")]
+    [Header("画像の数字"),Range(1,9)]
     public int ID;
 }

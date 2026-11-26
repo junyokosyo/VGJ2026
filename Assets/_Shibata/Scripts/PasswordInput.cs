@@ -6,7 +6,7 @@ public class PasswordInput : MonoBehaviour,IPointerDownHandler
 {
     [SerializeField]
     private AnswerDatabase _answerDatabase;
-    [SerializeField]
+    [SerializeField,Range(1,9)]
     private int _id;
     private PicturePassword _picturePassword;
     private Image _image;

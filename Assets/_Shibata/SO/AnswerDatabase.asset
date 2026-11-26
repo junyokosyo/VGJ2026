@@ -12,4 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3162cca328d270341a107be70369318a, type: 3}
   m_Name: AnswerDatabase
   m_EditorClassIdentifier: Assembly-CSharp::AnswerDatabase
-  PicturePasswords: []
+  PicturePasswords:
+  - ImageSprite: {fileID: 10915, guid: 0000000000000000f000000000000000, type: 0}
+    ID: 1
+  - ImageSprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+    ID: 2
