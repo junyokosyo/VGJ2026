@@ -5,11 +5,14 @@ using UnityEngine.SceneManagement;
 
 /// <summary>
 /// ゲーム全体の流れを管理する。
-/// 起動 → 30秒で電源オフ → 電源ボタンで再起動 → …をくり返し、調査を終えたらエンディングへ進む
+/// 起動 → 30秒で電源オフ → 電源ボタンで再起動（やり直し）→ …をくり返し、調査を終えたらエンディングへ進む。
+/// ・やり直し（電池切れ）：進行状況も暗号もそのまま。ロック画面から再開
+/// ・リセット（ゲーム終了・タイトルへ戻る）：次に InGame が始まるときに進行状況を消し、暗号を抽選し直す
 /// </summary>
 public class GameManager : MonoBehaviour
 {
-    private const string EndingSceneName = "OutGame";
+    private const string EndingSceneName = "Result";
+    private const string TitleSceneName = "Title";
 
     [Header("参照")]
     [SerializeField] private Timer _timer;
@@ -55,7 +58,9 @@ public class GameManager : MonoBehaviour
     public event Action<EndingType> OnGameEnded;
 
     /// <summary>
-    /// 新しいゲームとして進行状況を消す
+    /// 新しいゲームとしてリセットする（進行状況を消し、OnReset で暗号の抽選などを促す）。
+    /// ゲーム終了時やタイトルへ戻るときではなく、ここ（次のゲームの開始時）で消す。
+    /// 終了時に消すと、Result シーンでエンディングの種類が読めなくなるため
     /// </summary>
     private void Awake()
     {
@@ -138,6 +143,20 @@ public class GameManager : MonoBehaviour
         OnGameEnded?.Invoke(ending);
 
         StartCoroutine(LoadEndingScene());
+    }
+
+    /// <summary>
+    /// ゲームを中断してタイトルへ戻る（メニューの「タイトルへ」などから呼ぶ）。
+    /// 進行状況は、次にゲームを始めたときにリセットされる
+    /// </summary>
+    public void ReturnToTitle()
+    {
+        StopAllCoroutines();
+        _currentState = PhoneState.Ended;
+        _timer.SetTimerIsActive(false);
+
+        // TODO: SceneController（フェードつき）が完成したら、そちら経由に差し替える
+        SceneManager.LoadScene(TitleSceneName);
     }
 
     /// <summary>
