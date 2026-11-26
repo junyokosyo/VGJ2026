@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -5,19 +6,19 @@ public class Battery : MonoBehaviour
 {
     [Header("バッテリーのメモリを入れる親オブジェクト")]
     [SerializeField] private Transform _batteryParent;
-
     [Header("バッテリー1本を表すプレファブ")]
     [SerializeField] private GameObject _batterySegmentPrefab;
-
     [Header("バッテリーの一本ごとの間隔")]
-    [SerializeField] private int _batteryOffset;
+    [SerializeField] private int _batteryOffset = 9;
     [Header("バッテリー1本目の左側の間隔(+の値を入れてください)")]
-    [SerializeField] private int _leftPadding;
+    [SerializeField] private int _leftPadding = 40;
+    [Header("バッテリー1本が消えるまでの秒数")]
+    [SerializeField] private float _batteryDecreaseDuration = 0.3f;
+
 
     private Image[] _battery;
     private int _previousFilledCount = 0;
     private const int _batterySegmentCount = 10;
-
     private void Awake()
     {
         _battery = new Image[_batterySegmentCount];
@@ -64,7 +65,7 @@ public class Battery : MonoBehaviour
             //バッテリーの後ろからactiveかどうかを調べてactiveのやつを減らす
             if(_battery[batteryCount - i].gameObject.activeSelf)
             {
-                _battery[batteryCount - i].gameObject.SetActive(false);
+                StartCoroutine(PlaySegmentDisappearAnimation(_battery[batteryCount - i]));
                 --decreaseCount;
             }
             else
@@ -75,5 +76,20 @@ public class Battery : MonoBehaviour
             //減らした回数が0になったらループから抜け出す
             if (decreaseCount <= 0) break;
         }
+    }
+
+    private IEnumerator PlaySegmentDisappearAnimation(Image battery)
+    {
+        float animTimer = _batteryDecreaseDuration;
+
+        while (animTimer > 0)
+        {
+            animTimer -= Time.deltaTime;
+            battery.fillAmount = animTimer / _batteryDecreaseDuration;
+
+            yield return null;
+        }
+
+        battery.gameObject.SetActive(false);
     }
 }
