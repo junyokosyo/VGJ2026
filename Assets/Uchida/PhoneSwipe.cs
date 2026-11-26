@@ -1,26 +1,30 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.InputSystem;
-using UnityEngine.Scripting;
 using UnityEngine.UI;
 
 /// <summary>
-/// ƒXƒ}[ƒgƒtƒHƒ“‚Ì‰æ–Ê‚ğ¶‰E‚ÉƒXƒƒCƒv‚µ‚ÄA
-/// ƒƒbƒN‰æ–Ê‚ğƒXƒ‰ƒCƒh‚³‚¹‚éƒNƒ‰ƒXB
+/// ã‚¹ãƒãƒ¼ãƒˆãƒ•ã‚©ãƒ³ã®ç”»é¢ã‚’å·¦å³ã«ã‚¹ãƒ¯ã‚¤ãƒ—ã—ã¦ã€
+/// ãƒ­ãƒƒã‚¯ç”»é¢ã‚’ã‚¹ãƒ©ã‚¤ãƒ‰ã•ã›ã‚‹ã‚¯ãƒ©ã‚¹ã€‚
+/// LockScreen ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆè‡ªèº«ã«ä»˜ã‘ã‚‹ã€‚è¡¨ç¤ºã•ã‚Œã‚‹ãŸã³ï¼ˆé›»æ± åˆ‡ã‚Œã®ã‚„ã‚Šç›´ã—ã®ãŸã³ï¼‰ã«å…ƒã®çŠ¶æ…‹ã«æˆ»ã‚‹ã€‚
 /// </summary>
 public class PhoneSwipe : MonoBehaviour
 {
-    [Header("‰æ–Êİ’è")]
+    [Header("ç”»é¢è¨­å®š")]
     [SerializeField] private RectTransform _frontScreen;
     [SerializeField] private Image _fadeInPanel;
 
-    [Header("ƒXƒƒCƒvİ’è")]
+    [Header("ã‚¹ãƒ¯ã‚¤ãƒ—è¨­å®š")]
     [SerializeField, Range(0.1f, 0.8f)]
     private float _unlockRate = 0.25f;
 
-    [Header("ƒAƒjƒ[ƒVƒ‡ƒ“İ’è")]
+    [Header("ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³è¨­å®š")]
     [SerializeField] private float _slideSpeed = 0.3f;
     [SerializeField] private float _returnSpeed = 0.25f;
+
+    [Header("ãƒ­ãƒƒã‚¯è§£é™¤ã—ãŸã¨ãã«å‘¼ã¶å‡¦ç†ï¼ˆPhoneNavigator.Unlock ã‚’è¨­å®šã™ã‚‹ï¼‰")]
+    [SerializeField] private UnityEvent _onUnlocked;
 
     [HideInInspector]
     public bool IsSwiping = false;
@@ -42,7 +46,7 @@ public class PhoneSwipe : MonoBehaviour
     private Coroutine _animationCoroutine;
 
     /// <summary>
-    /// •K—v‚ÈƒRƒ“ƒ|[ƒlƒ“ƒg‚ğæ“¾‚·‚éB
+    /// å¿…è¦ãªã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã‚’å–å¾—ã™ã‚‹ã€‚
     /// </summary>
     private void Awake()
     {
@@ -54,19 +58,38 @@ public class PhoneSwipe : MonoBehaviour
 
         _canvas = _frontScreen.GetComponentInParent<Canvas>();
 
-        _color = _fadeInPanel.color;
+        // åˆæœŸä½ç½®ã‚’ä¿å­˜ã™ã‚‹ï¼ˆOnEnable ã¯ Start ã‚ˆã‚Šå…ˆã«å‘¼ã°ã‚Œã‚‹ã®ã§ã€ã“ã“ã§è¨˜éŒ²ã™ã‚‹ï¼‰
+        _originalPosition = _frontScreen.anchoredPosition;
+
+        if (_fadeInPanel != null)
+        {
+            _color = _fadeInPanel.color;
+        }
     }
 
     /// <summary>
-    /// ‰ŠúˆÊ’u‚ğ•Û‘¶‚·‚éB
+    /// ãƒ­ãƒƒã‚¯ç”»é¢ãŒè¡¨ç¤ºã•ã‚Œã‚‹ãŸã³ï¼ˆé›»æ± åˆ‡ã‚Œã®ã‚„ã‚Šç›´ã—ã®ãŸã³ï¼‰ã«ã€ä½ç½®ã¨çŠ¶æ…‹ã‚’å…ƒã«æˆ»ã™ã€‚
     /// </summary>
-    private void Start()
+    private void OnEnable()
     {
-        _originalPosition = _frontScreen.anchoredPosition; 
+        if (_frontScreen == null)
+        {
+            return;
+        }
+
+        _frontScreen.anchoredPosition = _originalPosition;
+
+        _isTouching = false;
+        _isAnimating = false;
+        _isUnlocked = false;
+        _animationCoroutine = null;
+        IsSwiping = false;
+
+        SetFadeAlpha(1f);
     }
 
     /// <summary>
-    /// ƒ}ƒEƒX“ü—Í‚ğŠÄ‹‚·‚éB
+    /// ãƒã‚¦ã‚¹å…¥åŠ›ã‚’ç›£è¦–ã™ã‚‹ã€‚
     /// </summary>
     private void Update()
     {
@@ -80,19 +103,19 @@ public class PhoneSwipe : MonoBehaviour
             return;
         }
 
-        // ƒ}ƒEƒX‚Ì¶ƒNƒŠƒbƒNŠJn
+        // ãƒã‚¦ã‚¹ã®å·¦ã‚¯ãƒªãƒƒã‚¯é–‹å§‹
         if (Mouse.current.leftButton.wasPressedThisFrame)
         {
             StartSwipe(Mouse.current.position.ReadValue());
         }
 
-        // ƒ}ƒEƒX‚ğƒhƒ‰ƒbƒO‚µ‚Ä‚¢‚éŠÔ
+        // ãƒã‚¦ã‚¹ã‚’ãƒ‰ãƒ©ãƒƒã‚°ã—ã¦ã„ã‚‹é–“
         if (_isTouching && Mouse.current.leftButton.isPressed)
         {
             MoveScreen(Mouse.current.position.ReadValue());
         }
 
-        // ƒ}ƒEƒX‚Ì¶ƒNƒŠƒbƒNI—¹
+        // ãƒã‚¦ã‚¹ã®å·¦ã‚¯ãƒªãƒƒã‚¯çµ‚äº†
         if (_isTouching &&
             Mouse.current.leftButton.wasReleasedThisFrame)
         {
@@ -101,7 +124,7 @@ public class PhoneSwipe : MonoBehaviour
     }
 
     /// <summary>
-    /// ƒ}ƒEƒX‚Ìƒhƒ‰ƒbƒOŠJnˆÊ’u‚ğ‹L˜^‚·‚éB
+    /// ãƒã‚¦ã‚¹ã®ãƒ‰ãƒ©ãƒƒã‚°é–‹å§‹ä½ç½®ã‚’è¨˜éŒ²ã™ã‚‹ã€‚
     /// </summary>
     private void StartSwipe(Vector2 position)
     {
@@ -117,7 +140,7 @@ public class PhoneSwipe : MonoBehaviour
     }
 
     /// <summary>
-    /// ƒ}ƒEƒX‚ÌˆÚ“®—Ê‚É‡‚í‚¹‚Ä‰æ–Ê‚ğ“®‚©‚·B
+    /// ãƒã‚¦ã‚¹ã®ç§»å‹•é‡ã«åˆã‚ã›ã¦ç”»é¢ã‚’å‹•ã‹ã™ã€‚
     /// </summary>
     private void MoveScreen(Vector2 position)
     {
@@ -137,7 +160,7 @@ public class PhoneSwipe : MonoBehaviour
     }
 
     /// <summary>
-    /// ƒhƒ‰ƒbƒOI—¹‚ÉƒƒbƒN‰ğœ”»’è‚ğs‚¤B
+    /// ãƒ‰ãƒ©ãƒƒã‚°çµ‚äº†æ™‚ã«ãƒ­ãƒƒã‚¯è§£é™¤åˆ¤å®šã‚’è¡Œã†ã€‚
     /// </summary>
     private void EndSwipe(Vector2 position)
     {
@@ -165,7 +188,7 @@ public class PhoneSwipe : MonoBehaviour
     }
 
     /// <summary>
-    /// ‰æ–Ê‚ğ¶‰E‚Ç‚¿‚ç‚©‚Ì‰æ–ÊŠO‚Ü‚ÅƒXƒ‰ƒCƒh‚³‚¹‚éB
+    /// ç”»é¢ã‚’å·¦å³ã©ã¡ã‚‰ã‹ã®ç”»é¢å¤–ã¾ã§ã‚¹ãƒ©ã‚¤ãƒ‰ã•ã›ã‚‹ã€‚
     /// </summary>
     private IEnumerator SlideOut(float direction)
     {
@@ -191,18 +214,21 @@ public class PhoneSwipe : MonoBehaviour
 
         _frontScreen.anchoredPosition = targetPosition;
 
-        _frontScreen.gameObject.SetActive(false);
-
         _isUnlocked = true;
         _isAnimating = false;
 
         _animationCoroutine = null;
 
         IsSwiping = true;
+
+        // è§£é™¤ã—ãŸã“ã¨ã‚’çŸ¥ã‚‰ã›ã‚‹ï¼ˆã“ã“ã§ PhoneNavigator ãŒãƒ›ãƒ¼ãƒ ç”»é¢ã«åˆ‡ã‚Šæ›¿ãˆã‚‹ï¼‰
+        _onUnlocked?.Invoke();
+
+        _frontScreen.gameObject.SetActive(false);
     }
 
     /// <summary>
-    /// ƒhƒ‰ƒbƒO‹——£‚ª‘«‚è‚È‚¢ê‡AŒ³‚ÌˆÊ’u‚É–ß‚·B
+    /// ãƒ‰ãƒ©ãƒƒã‚°è·é›¢ãŒè¶³ã‚Šãªã„å ´åˆã€å…ƒã®ä½ç½®ã«æˆ»ã™ã€‚
     /// </summary>
     private IEnumerator ReturnScreen()
     {
@@ -230,11 +256,10 @@ public class PhoneSwipe : MonoBehaviour
 
         _animationCoroutine = null;
 
-        _color.a = 1f;
-        _fadeInPanel.color = _color;
+        SetFadeAlpha(1f);
     }
     /// <summary>
-    /// ƒXƒƒCƒv‹——£‚É‰‚¶‚Ä“§–¾“x‚ğ•ÏX‚·‚éB
+    /// ã‚¹ãƒ¯ã‚¤ãƒ—è·é›¢ã«å¿œã˜ã¦é€æ˜åº¦ã‚’å¤‰æ›´ã™ã‚‹ã€‚
     /// </summary>
     private void UpdateFadeAlpha()
     {
@@ -245,12 +270,24 @@ public class PhoneSwipe : MonoBehaviour
 
         float progress = Mathf.Clamp01(_moveLength / unlockDistance);
 
-        _color.a = Mathf.Lerp(1f, 0f, progress);
+        SetFadeAlpha(Mathf.Lerp(1f, 0f, progress));
+    }
 
+    /// <summary>
+    /// ãƒ•ã‚§ãƒ¼ãƒ‰ç”¨ãƒ‘ãƒãƒ«ã®é€æ˜åº¦ã‚’è¨­å®šã™ã‚‹ï¼ˆãƒ‘ãƒãƒ«ãŒæœªè¨­å®šãªã‚‰ä½•ã‚‚ã—ãªã„ï¼‰ã€‚
+    /// </summary>
+    private void SetFadeAlpha(float alpha)
+    {
+        if (_fadeInPanel == null)
+        {
+            return;
+        }
+
+        _color.a = alpha;
         _fadeInPanel.color = _color;
     }
     /// <summary>
-    /// ƒ}ƒEƒX‚ğƒNƒŠƒbƒN‚µ‚½‚Æ‚«‚ÉUI‚Æ‚©‚Ô‚Á‚Ä‚¢‚é‚©‚ğŠm”F‚µ‚Ä‚¢‚éB
+    /// ãƒã‚¦ã‚¹ã‚’ã‚¯ãƒªãƒƒã‚¯ã—ãŸã¨ãã«UIã¨ã‹ã¶ã£ã¦ã„ã‚‹ã‹ã‚’ç¢ºèªã—ã¦ã„ã‚‹ã€‚
     /// </summary>
     private bool IsInsideFrontScreen(Vector2 screenPosition)
     {

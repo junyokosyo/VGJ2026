@@ -105,12 +105,15 @@ public class PhoneNavigator : MonoBehaviour
     }
 
     /// <summary>
-    /// 起動が終わったらロック画面を出す
+    /// 起動が終わったらロック画面を出す。
+    /// スワイプでロック画面をずらしたときに下からホーム画面が見えるよう、ホーム画面も後ろに表示しておく
+    /// （ヒエラルキーで HomeScreen が LockScreen より上にあること。ロック画面がクリックを受け止めるので、アイコンは押せない）
     /// </summary>
     private void ShowLockScreen()
     {
         CloseCurrentApp();
         ShowOnly(_lockScreen);
+        _homeScreen.SetActive(true);
     }
 
     /// <summary>
