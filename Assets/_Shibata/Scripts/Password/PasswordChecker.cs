@@ -21,13 +21,13 @@ public class PasswordChecker
                     UnityEngine.Debug.Log("Clear");
                     PasswordManager.Instance.ChangeType(PuzzleType.Picture);
                     PasswordManager.Instance.InstancePassword();
-                    PasswordManager.Instance.SetCorrect(PasswordManager.Instance.PicturrePassword.Correct);
+                    PasswordManager.Instance.SetCorrect(PasswordManager.Instance.GalleryPassword.Correct);
                     OnReset?.Invoke();
                 }
                 else OnReset?.Invoke();
                 break;
             case PuzzleType.Picture:
-                if (PasswordManager.Instance.PicturrePassword.CheckAnswer(text))
+                if (PasswordManager.Instance.GalleryPassword.CheckAnswer(text))
                 {
                     UnityEngine.Debug.Log("クリア");
                 }

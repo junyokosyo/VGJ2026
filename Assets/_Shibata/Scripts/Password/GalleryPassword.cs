@@ -1,11 +1,15 @@
 using UnityEngine;
 
-public class PicturePassword
+public class GalleryPassword
 {
     /// <summary>
     /// 正しい答え
     /// </summary>
     public string Correct => _correct;
+    public int September => _september;
+    public int October => _october;
+    public int November => _november;
+    public int December => _december;
 
     /// <summary>
     /// ９月の枚数
