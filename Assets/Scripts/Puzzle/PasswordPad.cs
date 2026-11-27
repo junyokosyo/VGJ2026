@@ -36,9 +36,6 @@ public class PasswordPad : MonoBehaviour
     private string _input = "";
     private bool _isShaking;
 
-    [HideInInspector]
-    public bool IsClear = false;
-
     /// <summary>
     /// 表示されるたびに入力を消す（アプリを閉じた・電源が落ちたあとも、まっさらから）
     /// </summary>
@@ -117,7 +114,6 @@ public class PasswordPad : MonoBehaviour
         {
             Clear();
             _onCorrect?.Invoke();
-            IsClear = true;
             return;
         }
 
