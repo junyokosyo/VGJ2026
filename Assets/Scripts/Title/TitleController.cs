@@ -36,6 +36,10 @@ public class TitleController : MonoBehaviour, IPointerDownHandler, IDragHandler,
     [Header("ロック画面（スマホの画面。空なら子の Screen を使う）")]
     [SerializeField] private RectTransform _lockScreen;
 
+    [Header("スマホの外の操作（歯車など）。始めるときに消す。空でもよい")]
+    [SerializeField] private CanvasGroup _outsideUi;
+    [SerializeField] private float _outsideUiFadeDuration = 0.3f;
+
     [Header("演出の秒数（デモと同じ値）")]
     [SerializeField] private float _enterDuration = 1.1f;
     [SerializeField] private float _riseDuration = 0.64f;
@@ -171,6 +175,7 @@ public class TitleController : MonoBehaviour, IPointerDownHandler, IDragHandler,
 
         _isStarting = true;
         _isDragging = false;
+        HideOutsideUi();
         MoveTo(0f, _riseDuration, () =>
         {
             DOVirtual.DelayedCall(_unlockDelay, Unlock).SetLink(gameObject);
@@ -201,6 +206,20 @@ public class TitleController : MonoBehaviour, IPointerDownHandler, IDragHandler,
         }
 
         sequence.OnComplete(GoToInGame);
+    }
+
+    /// <summary>
+    /// スマホの外の操作（歯車など）を消して、押せないようにする
+    /// </summary>
+    private void HideOutsideUi()
+    {
+        if (_outsideUi == null)
+        {
+            return;
+        }
+
+        _outsideUi.blocksRaycasts = false;
+        _outsideUi.DOFade(0f, _outsideUiFadeDuration).SetLink(gameObject);
     }
 
     /// <summary>
