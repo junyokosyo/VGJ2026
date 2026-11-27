@@ -162,6 +162,13 @@ public class MessagingApp : AppBase
     public void GoToEnding()
     {
         _waitTween?.Kill();
+
+        // プレハブにすると、シーンの GameManager への参照が外れるので、空ならシーンから探す
+        if (_gameManager == null)
+        {
+            _gameManager = FindAnyObjectByType<GameManager>();
+        }
+
         _gameManager.EndGame(GameProgress.Ending);
     }
 

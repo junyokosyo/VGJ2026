@@ -6,6 +6,7 @@ using UnityEngine;
 /// 3D Bird Model アプリ（仕様書 v0.2 の5-4）。
 /// 鳥の模型をドラッグで回して見る。鳥がくわえている手紙の裏がこちらを 0.3 秒向いたら「見つけた」ことにして、
 /// 下に「手紙の裏に書かれた数字」を出す（これがロッカーの番号。一度見つけたら、次からは最初から出ている）
+/// 手紙の裏の文字はシーンの 3D の置き場にあるので、プレハブにして参照が外れたときは、名前（LetterBack）で探す
 /// </summary>
 public class BirdModelApp : AppBase
 {
@@ -23,6 +24,8 @@ public class BirdModelApp : AppBase
     [SerializeField] private float _facingThreshold = 0.75f;
     [SerializeField] private float _foundSeconds = 0.3f;
 
+    private const string LetterBackName = "LetterBack";
+
     private float _facingTime;
 
     /// <summary>
@@ -30,6 +33,8 @@ public class BirdModelApp : AppBase
     /// </summary>
     protected override void OnOpened()
     {
+        FindLetterIfMissing();
+
         string number = GameProgress.Codes.LetterNumber;
         _letterNumberText.text = string.Join(" ", number.ToCharArray());
         _readoutNumberText.text = number;
@@ -40,11 +45,33 @@ public class BirdModelApp : AppBase
     }
 
     /// <summary>
+    /// 手紙の裏の文字が空なら、回している軸の中から名前で探す（プレハブにしたときのため）
+    /// </summary>
+    private void FindLetterIfMissing()
+    {
+        if (_letterNumberText != null || _viewer.Pivot == null)
+        {
+            return;
+        }
+
+        foreach (TextMeshPro text in _viewer.Pivot.GetComponentsInChildren<TextMeshPro>(true))
+        {
+            if (text.name == LetterBackName)
+            {
+                _letterNumberText = text;
+                return;
+            }
+        }
+
+        Debug.LogError($"[BirdModelApp] 手紙の裏の文字（{LetterBackName}）が見つかりません");
+    }
+
+    /// <summary>
     /// 手紙の裏がこちらを向いている時間を数える
     /// </summary>
     private void Update()
     {
-        if (GameProgress.HasFlag(ProgressFlag.LetterNumberFound))
+        if (_letterNumberText == null || GameProgress.HasFlag(ProgressFlag.LetterNumberFound))
         {
             return;
         }

@@ -9,6 +9,8 @@ using UnityEngine.UI;
 /// ・回すのは _pivot。中のモデルは差し替えてよい（_pivot の子を入れ替えるだけ）
 /// ・離したあとも少しだけ回り続ける（慣性）
 /// ・ResetView で最初の向き（正面）にゆっくり戻る
+/// ・アプリをプレハブにすると、シーンにあるカメラと軸への参照が外れる（プレハブはシーンの物を参照できない）。
+///   そのときは、シーンの _stageName（BirdStage）の中から自分で探す
 /// </summary>
 [RequireComponent(typeof(RawImage))]
 public class ModelViewer : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
@@ -18,6 +20,9 @@ public class ModelViewer : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
     [Header("参照")]
     [SerializeField] private Camera _viewCamera;
     [SerializeField] private Transform _pivot;
+
+    [Header("参照が空のときに探す、シーンの3Dの置き場の名前（中のカメラと Pivot を使う）")]
+    [SerializeField] private string _stageName = "BirdStage";
 
     [Header("回り方")]
     [SerializeField] private float _rotateSpeed = 0.3f;
@@ -36,12 +41,47 @@ public class ModelViewer : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
     public Camera ViewCamera => _viewCamera;
 
     /// <summary>
+    /// 回している軸（中にモデルが入っている）
+    /// </summary>
+    public Transform Pivot => _pivot;
+
+    /// <summary>
     /// 最初の向きを「正面」として覚えておく
     /// </summary>
     private void Awake()
     {
         _rawImage = GetComponent<RawImage>();
+        FindStageIfMissing();
         _baseRotation = _pivot.rotation;
+    }
+
+    /// <summary>
+    /// カメラか軸が空なら、シーンの3Dの置き場から探す（プレハブにしたときのため）
+    /// </summary>
+    private void FindStageIfMissing()
+    {
+        if (_viewCamera != null && _pivot != null)
+        {
+            return;
+        }
+
+        GameObject stage = GameObject.Find(_stageName);
+
+        if (stage == null)
+        {
+            Debug.LogError($"[ModelViewer] シーンに {_stageName} が見つかりません");
+            return;
+        }
+
+        if (_viewCamera == null)
+        {
+            _viewCamera = stage.GetComponentInChildren<Camera>(true);
+        }
+
+        if (_pivot == null)
+        {
+            _pivot = stage.transform.Find("Pivot");
+        }
     }
 
     /// <summary>
