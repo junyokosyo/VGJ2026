@@ -1,3 +1,4 @@
+using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -16,6 +17,9 @@ public class ChatBubbleView : MonoBehaviour
     [SerializeField] private Color _mineColor = new Color(1f, 0.61f, 0.91f);
     [SerializeField] private Color _theirColor = new Color(0.92f, 0.92f, 0.94f);
 
+    [Header("テキストのサイズ")]
+    [SerializeField] private int _maxTextWidth = 440;
+
     /// <summary>
     /// 文字と向きを設定する
     /// </summary>
@@ -24,5 +28,19 @@ public class ChatBubbleView : MonoBehaviour
         _text.text = text;
         _bubble.color = isMine ? _mineColor : _theirColor;
         _row.childAlignment = isMine ? TextAnchor.UpperRight : TextAnchor.UpperLeft;
+
+        var textLength = text.Length;
+        var fontSize = (int)_text.fontSize;
+
+        int bubbleWidth = (textLength * (int)fontSize) + ((int)fontSize * 2);
+
+        if(bubbleWidth > _maxTextWidth)
+        {
+            bubbleWidth = _maxTextWidth;
+        }
+
+        _bubble.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, bubbleWidth);
+
+        Debug.Log($"本文=[{text}] 文字数={text.Length}");
     }
 }
