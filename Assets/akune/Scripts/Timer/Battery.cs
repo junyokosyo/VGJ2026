@@ -1,8 +1,6 @@
 using DG.Tweening;
-using System;
 using TMPro;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 /// <summary>
@@ -25,6 +23,9 @@ public class Battery : MonoBehaviour
     [Header("減ったバーの濃さと、薄くなるまでの秒数")]
     [SerializeField] private float _spentAlpha = 0.14f;
     [SerializeField] private float _fadeDuration = 0.35f;
+
+    [Header("この%以下になったら点滅する（仕様書 3-1：5%）")]
+    [SerializeField] private int _lowPercent = 5;
 
     [Header("5%以下の時のバッテリー点滅の秒数")]
     [SerializeField] private float _blinkDuration = 0.7f;
@@ -72,6 +73,8 @@ public class Battery : MonoBehaviour
     /// </summary>
     public void Blink()
     {
+        // 2回呼ばれても点滅が重ならないように、前の点滅を止めてから始める
+        _blinkTween?.Kill();
         _blinkTween = DOTween.Sequence()
             .Append(_percentText.DOFade(0f, _blinkDuration))
             .Append(_percentText.DOFade(1f, _blinkDuration))
@@ -85,7 +88,7 @@ public class Battery : MonoBehaviour
     /// </summary>
     public void StopBlink()
     {
-        _blinkTween.Kill();
+        _blinkTween?.Kill();
         _blinkTween = null;
 
         var color = _percentText.color;
@@ -129,6 +132,30 @@ public class Battery : MonoBehaviour
                 color.a = alpha;
                 bar.color = color;
             }
+        }
+
+        UpdateBlink(percent);
+    }
+
+    /// <summary>
+    /// 5%以下（0%は除く）なら点滅させ、それより多ければ止める（再起動して満タンに戻ったときも止まる）
+    /// </summary>
+    private void UpdateBlink(int percent)
+    {
+        if (_percentText == null)
+        {
+            return;
+        }
+
+        bool isLow = percent > 0 && percent <= _lowPercent;
+
+        if (isLow && _blinkTween == null)
+        {
+            Blink();
+        }
+        else if (!isLow && _blinkTween != null)
+        {
+            StopBlink();
         }
     }
 }
