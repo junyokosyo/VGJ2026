@@ -211,7 +211,7 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
+    rgba: 4289568922
   m_fontColor: {r: 0.6039216, g: 0.627451, b: 0.6784314, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
@@ -224,7 +224,7 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
@@ -650,7 +650,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1273351016565979472
 RectTransform:
   m_ObjectHideFlags: 0
@@ -820,7 +820,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -14, y: 0}
+  m_AnchoredPosition: {x: 1, y: -40}
   m_SizeDelta: {x: -28, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6892782161617283303
@@ -860,7 +860,7 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
+    rgba: 4293499903
   m_fontColor: {r: 1, g: 0.60784316, b: 0.9137255, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
@@ -873,7 +873,7 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
@@ -885,7 +885,7 @@ MonoBehaviour:
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 1
-  m_HorizontalAlignment: 4
+  m_HorizontalAlignment: 2
   m_VerticalAlignment: 4096
   m_textAlignment: 65535
   m_characterSpacing: 30
@@ -1187,6 +1187,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ModelViewer
   _viewCamera: {fileID: 0}
   _pivot: {fileID: 0}
+  _stageName: BirdStage
   _rotateSpeed: 0.3
   _inertiaDamping: 0.9
   _resetDuration: 0.55
