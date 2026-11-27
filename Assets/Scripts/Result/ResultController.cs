@@ -1,6 +1,7 @@
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 /// <summary>
 /// Result シーン（簡易版）。たどり着いたエンディングの文章と、再起動の回数を出す。
@@ -21,6 +22,9 @@ public class ResultController : MonoBehaviour
     [Header("TRUE END の手紙")]
     [SerializeField] private GameObject _letter;
     [SerializeField] private TextMeshProUGUI _letterText;
+
+    [Header("手紙の文の、いちばん小さい文字の大きさ（長くて入りきらないときに、ここまで縮める）")]
+    [SerializeField] private float _letterMinFontSize = 18f;
 
     [Header("結果の文字のまとまり（手紙の ExitButton が最初に透明にするもの）")]
     [SerializeField] private CanvasGroup _texts;
@@ -54,7 +58,8 @@ public class ResultController : MonoBehaviour
 
         if (hasLetter)
         {
-            _letterText.text = ending.Letter;
+            FitLetterText(ending.Letter);
+            PlaceLetter();
         }
         else
         {
@@ -65,6 +70,38 @@ public class ResultController : MonoBehaviour
 
         _content.alpha = 0f;
         _content.DOFade(1f, _fadeDuration).SetLink(gameObject);
+    }
+
+    /// <summary>
+    /// 手紙の文を入れて、便箋の枠からはみ出さない大きさに自動で縮める
+    /// （手紙の文は長いので、決まった大きさのままだと「ヒナ」「パパ」やボタンに重なる）
+    /// </summary>
+    private void FitLetterText(string letter)
+    {
+        _letterText.enableAutoSizing = true;
+        _letterText.fontSizeMax = _letterText.fontSize;
+        _letterText.fontSizeMin = _letterMinFontSize;
+        _letterText.text = letter;
+    }
+
+    /// <summary>
+    /// 手紙を画面の真ん中に置く。
+    /// Content は「手紙｜結果の文字」を横に並べる作り（HorizontalLayoutGroup）なので、
+    /// そのままだと手紙が並べる枠に押し込まれてずれる。手紙だけ並べる対象から外す
+    /// </summary>
+    private void PlaceLetter()
+    {
+        if (!_letter.TryGetComponent(out LayoutElement layout))
+        {
+            layout = _letter.AddComponent<LayoutElement>();
+        }
+
+        layout.ignoreLayout = true;
+
+        RectTransform rect = (RectTransform)_letter.transform;
+        rect.anchorMin = new Vector2(0.5f, 0.5f);
+        rect.anchorMax = new Vector2(0.5f, 0.5f);
+        rect.anchoredPosition = Vector2.zero;
     }
 
     /// <summary>
