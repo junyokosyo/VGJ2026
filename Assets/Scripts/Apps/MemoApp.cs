@@ -1,10 +1,12 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
 /// Memo アプリ（仕様書 v0.2 の5-4）。
-/// 最初はパスコードでロックされている。解除すると4枚のメモが出て、2枚を順にタップすると入れ替わる。
+/// 最初はパスコードでロックされている。解除すると4枚のメモが出る。
+/// 並べ替え：メモをドラッグして上下に動かす（デモ v0.27 と同じ）。2枚を順にタップして入れ替えることもできる。
 /// 時系列（9→10→11→12月）に並ぶと、タイトルの数字が光る（その数字が隠された履歴のパスコード）。
-/// 並べ替えはドラッグではなくタップで入れ替え（ドラッグはあとで足す）
+/// ドラッグ中は、メモの「中身」が指についてくる（4つの枠は動かさず、中身を入れ替えて見せる）
 /// </summary>
 public class MemoApp : AppBase
 {
@@ -22,6 +24,18 @@ public class MemoApp : AppBase
     [SerializeField] private AnswerDatabase _dataBase;
 
     private int _selectedIndex = -1;
+    private int _dragIndex = -1;
+
+    /// <summary>
+    /// メモ4枚に、自分と並び位置を教える（ドラッグを受け取れるようにする）
+    /// </summary>
+    private void Start()
+    {
+        for (int i = 0; i < _noteViews.Length; i++)
+        {
+            _noteViews[i].Init(this, i);
+        }
+    }
 
     /// <summary>
     /// 開いたら、ロック中か解除済みかに合わせて表示する
@@ -29,6 +43,7 @@ public class MemoApp : AppBase
     protected override void OnOpened()
     {
         _selectedIndex = -1;
+        _dragIndex = -1;
         Refresh();
     }
 
@@ -63,6 +78,82 @@ public class MemoApp : AppBase
     }
 
     /// <summary>
+    /// メモのドラッグを始めた（MemoNoteView から呼ばれる）
+    /// </summary>
+    public void BeginNoteDrag(int index)
+    {
+        _selectedIndex = -1;
+        _dragIndex = index;
+        Refresh();
+    }
+
+    /// <summary>
+    /// ドラッグ中（MemoNoteView から呼ばれる）。指にいちばん近い枠へ、ドラッグ中のメモを動かす
+    /// </summary>
+    public void DragNote(Vector2 screenPosition, Camera eventCamera)
+    {
+        if (_dragIndex < 0)
+        {
+            return;
+        }
+
+        int target = FindNearestSlot(screenPosition, eventCamera);
+
+        if (target < 0 || target == _dragIndex)
+        {
+            return;
+        }
+
+        List<string> order = new List<string>(GameProgress.MemoOrder);
+        string id = order[_dragIndex];
+        order.RemoveAt(_dragIndex);
+        order.Insert(target, id);
+        GameProgress.SetMemoOrder(order.ToArray());
+
+        _dragIndex = target;
+        Refresh();
+    }
+
+    /// <summary>
+    /// ドラッグを終えた（MemoNoteView から呼ばれる）
+    /// </summary>
+    public void EndNoteDrag()
+    {
+        _dragIndex = -1;
+        Refresh();
+    }
+
+    /// <summary>
+    /// 指の位置（縦）にいちばん近いメモの枠の番号（見つからなければ -1）
+    /// </summary>
+    private int FindNearestSlot(Vector2 screenPosition, Camera eventCamera)
+    {
+        RectTransform first = (RectTransform)_noteViews[0].transform;
+
+        if (!RectTransformUtility.ScreenPointToWorldPointInRectangle(first, screenPosition, eventCamera, out Vector3 pointer))
+        {
+            return -1;
+        }
+
+        int nearest = -1;
+        float nearestDistance = float.MaxValue;
+
+        for (int i = 0; i < _noteViews.Length; i++)
+        {
+            RectTransform slot = (RectTransform)_noteViews[i].transform;
+            float distance = Mathf.Abs(slot.TransformPoint(slot.rect.center).y - pointer.y);
+
+            if (distance < nearestDistance)
+            {
+                nearestDistance = distance;
+                nearest = i;
+            }
+        }
+
+        return nearest;
+    }
+
+    /// <summary>
     /// 画面を今の状態に合わせる
     /// </summary>
     private void Refresh()
@@ -84,7 +175,8 @@ public class MemoApp : AppBase
             int noteIndex = System.Array.IndexOf(NoteIds, order[i]);
             int number = GameProgress.Codes.MemoNumbers[noteIndex];
             string story = GetStory(9 + noteIndex);
-            _noteViews[i].Show(number, story, i == _selectedIndex, isAligned);
+            bool isPicked = i == _selectedIndex || i == _dragIndex;
+            _noteViews[i].Show(number, story, isPicked, isAligned);
         }
     }
 
