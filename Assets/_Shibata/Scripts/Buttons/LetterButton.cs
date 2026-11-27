@@ -20,6 +20,7 @@ public class LetterButton : MonoBehaviour
         _button.onClick.AddListener(OnOpen);
 
         _contentsLatters.alpha = 0;
+        _contentsLatters.blocksRaycasts = false;
     }
 
     private void OnDestroy()
@@ -30,6 +31,6 @@ public class LetterButton : MonoBehaviour
     void OnOpen()
     {
         _latter.DOFade(0, 1);
-        _contentsLatters.DOFade(1, 1);
+        _contentsLatters.DOFade(1, 1).OnComplete(()=> _contentsLatters.blocksRaycasts = true);
     }
 }
