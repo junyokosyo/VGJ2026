@@ -1414,6 +1414,7 @@ MonoBehaviour:
   _rebootText: {fileID: 564568413}
   _letter: {fileID: 1348740639}
   _letterText: {fileID: 365942141}
+  _texts: {fileID: 596095236}
   _fadeDuration: 1.2
 --- !u!1 &1450255421
 GameObject:
@@ -1791,27 +1792,27 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4653348497108866249, guid: e9606b25abcce9f4db85deb20ba90c33, type: 3}
       propertyPath: m_AnchorMax.x
-      value: 0
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 4653348497108866249, guid: e9606b25abcce9f4db85deb20ba90c33, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 4653348497108866249, guid: e9606b25abcce9f4db85deb20ba90c33, type: 3}
       propertyPath: m_AnchorMin.x
-      value: 0
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 4653348497108866249, guid: e9606b25abcce9f4db85deb20ba90c33, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 0
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 4653348497108866249, guid: e9606b25abcce9f4db85deb20ba90c33, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 0
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 4653348497108866249, guid: e9606b25abcce9f4db85deb20ba90c33, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 0
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 4653348497108866249, guid: e9606b25abcce9f4db85deb20ba90c33, type: 3}
       propertyPath: m_LocalPosition.x

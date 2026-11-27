@@ -22,6 +22,9 @@ public class ResultController : MonoBehaviour
     [SerializeField] private GameObject _letter;
     [SerializeField] private TextMeshProUGUI _letterText;
 
+    [Header("結果の文字のまとまり（手紙の ExitButton が最初に透明にするもの）")]
+    [SerializeField] private CanvasGroup _texts;
+
     [Header("出てくるときのフェードの秒数")]
     [SerializeField] private float _fadeDuration = 1.2f;
 
@@ -53,11 +56,31 @@ public class ResultController : MonoBehaviour
         {
             _letterText.text = ending.Letter;
         }
+        else
+        {
+            ShowTexts();
+        }
 
         GameProgress.SetRecordedEnding(type);
 
         _content.alpha = 0f;
         _content.DOFade(1f, _fadeDuration).SetLink(gameObject);
+    }
+
+    /// <summary>
+    /// 結果の文字を見える・押せるようにする。
+    /// 手紙の ExitButton は、起動したとき（Awake）に結果の文字を透明にする。
+    /// 手紙を出さないエンディングでは Exit が押されないので、ここで戻す（戻さないと黒い画面のまま止まる）
+    /// </summary>
+    private void ShowTexts()
+    {
+        if (_texts == null)
+        {
+            return;
+        }
+
+        _texts.alpha = 1f;
+        _texts.blocksRaycasts = true;
     }
 
     /// <summary>
