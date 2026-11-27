@@ -114,24 +114,26 @@ public class ResultController : MonoBehaviour
 
     /// <summary>
     /// 「手紙をひらく」：スマホを隠して、芝田さんの手紙を出す。
-    /// 結びの言葉の画面は先に出しておく（スマホが隠れているので見えない）。
+    /// スマホが消えきってから、中を結びの言葉の画面に替えて、手紙を出す
+    /// （消えている途中に替えると、結びの言葉が一瞬見えてしまう）。
     /// 手紙を閉じると、芝田さんの ExitButton がスマホを出すので、そのまま結びの言葉が見える
     /// </summary>
     private void OpenLetter()
     {
-        _lockerOpen.alpha = 0f;
-        _lockerOpen.blocksRaycasts = false;
-        _trueEndCard.alpha = 1f;
-        _trueEndCard.blocksRaycasts = true;
-        _current = _trueEndCard;
-
-        _phone.DOKill();
-        _phone.DOFade(0f, _fadeDuration).SetLink(gameObject);
         _phone.blocksRaycasts = false;
+        _phone.DOKill();
+        _phone.DOFade(0f, _fadeDuration).SetLink(gameObject).OnComplete(() =>
+        {
+            _lockerOpen.alpha = 0f;
+            _lockerOpen.blocksRaycasts = false;
+            _trueEndCard.alpha = 1f;
+            _trueEndCard.blocksRaycasts = true;
+            _current = _trueEndCard;
 
-        PlaceLetter();
-        PlayBgmWhenLetterOpened();
-        _letter.SetActive(true);
+            PlaceLetter();
+            PlayBgmWhenLetterOpened();
+            _letter.SetActive(true);
+        });
     }
 
     /// <summary>
@@ -268,10 +270,19 @@ public class ResultController : MonoBehaviour
     }
 
     /// <summary>
-    /// 手紙を画面の真ん中に置く（並べる部品があっても、手紙だけは並べる対象から外す）
+    /// 手紙を画面の真ん中に置く（並べる部品があっても、手紙だけは並べる対象から外す）。
+    /// 手紙はスマホより奥に置く（手前にあると、閉じたあとの透明な封筒が、スマホのボタンを押したときに反応してしまう）
     /// </summary>
     private void PlaceLetter()
     {
+        Transform letter = _letter.transform;
+        Transform phone = _phone.transform;
+
+        if (letter.parent == phone.parent && letter.GetSiblingIndex() > phone.GetSiblingIndex())
+        {
+            letter.SetSiblingIndex(phone.GetSiblingIndex());
+        }
+
         if (!_letter.TryGetComponent(out LayoutElement layout))
         {
             layout = _letter.AddComponent<LayoutElement>();

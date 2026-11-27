@@ -33,7 +33,7 @@ public class GalleryApp : AppBase
     [Header("写真を大きく見る画面")]
     [SerializeField] private GalleryViewer _viewer;
 
-    [Header("写真の説明文（9・10・11・12月。デモ v0.27 の文）")]
+    [Header("写真の説明文の予備（9・10・11・12月）。ふだんは AnswerDatabase の Messages の文を使う")]
     [SerializeField] private string[] _captions =
     {
         "公園で一緒に歩いている。",
@@ -82,7 +82,7 @@ public class GalleryApp : AppBase
         {
             int month = 9 + i;
             int count = GameProgress.Codes.PhotoCounts[i];
-            string caption = i < _captions.Length ? _captions[i] : string.Empty;
+            string caption = GetCaption(month, i);
 
             ClearChildren(parents[i]);
 
@@ -138,6 +138,23 @@ public class GalleryApp : AppBase
         Button button = photo.AddComponent<Button>();
         button.targetGraphic = frame;
         button.onClick.AddListener(() => _viewer.Open(index));
+    }
+
+    /// <summary>
+    /// その月の写真の説明文。AnswerDatabase の Messages（月ごとの Story）を使う。
+    /// 空なら、このコンポーネントの Captions（デモ v0.27 の文）を使う
+    /// </summary>
+    private string GetCaption(int month, int monthIndex)
+    {
+        foreach (Message message in _dataBase.Messages)
+        {
+            if (message.Month == month && !string.IsNullOrEmpty(message.Story))
+            {
+                return message.Story;
+            }
+        }
+
+        return monthIndex < _captions.Length ? _captions[monthIndex] : string.Empty;
     }
 
     /// <summary>

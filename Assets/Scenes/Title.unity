@@ -3801,10 +3801,30 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1748408855}
     m_Modifications:
+    - target: {fileID: 3835344071886442047, guid: 4eda4272baf32d84a8d44fd33950926c, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 7e69a466fdc1b984c8345fd02c42339d, type: 3}
+    - target: {fileID: 3835344071886442047, guid: 4eda4272baf32d84a8d44fd33950926c, type: 3}
+      propertyPath: m_Color.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3835344071886442047, guid: 4eda4272baf32d84a8d44fd33950926c, type: 3}
+      propertyPath: m_Color.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3835344071886442047, guid: 4eda4272baf32d84a8d44fd33950926c, type: 3}
+      propertyPath: m_Color.r
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5429557352953281180, guid: 4eda4272baf32d84a8d44fd33950926c, type: 3}
       propertyPath: m_Name
       value: SettingsPanel
       objectReference: {fileID: 0}
+    - target: {fileID: 7310659772356674776, guid: 4eda4272baf32d84a8d44fd33950926c, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 7e69a466fdc1b984c8345fd02c42339d, type: 3}
     - target: {fileID: 7763554201990980857, guid: 4eda4272baf32d84a8d44fd33950926c, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5

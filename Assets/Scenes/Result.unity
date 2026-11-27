@@ -5268,9 +5268,49 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6654555074549065997, guid: e9606b25abcce9f4db85deb20ba90c33, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 60d04eb1b90cd2b47aab8113ddea809c, type: 3}
     - target: {fileID: 6699382021403247233, guid: e9606b25abcce9f4db85deb20ba90c33, type: 3}
       propertyPath: m_Name
       value: Letters
+      objectReference: {fileID: 0}
+    - target: {fileID: 6699382021403247233, guid: e9606b25abcce9f4db85deb20ba90c33, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9206521171797593319, guid: e9606b25abcce9f4db85deb20ba90c33, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 1920
+      objectReference: {fileID: 0}
+    - target: {fileID: 9206521171797593319, guid: e9606b25abcce9f4db85deb20ba90c33, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 1080
+      objectReference: {fileID: 0}
+    - target: {fileID: 9206521171797593319, guid: e9606b25abcce9f4db85deb20ba90c33, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.38
+      objectReference: {fileID: 0}
+    - target: {fileID: 9206521171797593319, guid: e9606b25abcce9f4db85deb20ba90c33, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.38
+      objectReference: {fileID: 0}
+    - target: {fileID: 9206521171797593319, guid: e9606b25abcce9f4db85deb20ba90c33, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.38
+      objectReference: {fileID: 0}
+    - target: {fileID: 9206521171797593319, guid: e9606b25abcce9f4db85deb20ba90c33, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 775
+      objectReference: {fileID: 0}
+    - target: {fileID: 9206521171797593319, guid: e9606b25abcce9f4db85deb20ba90c33, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -17
+      objectReference: {fileID: 0}
+    - target: {fileID: 9206521171797593319, guid: e9606b25abcce9f4db85deb20ba90c33, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -5886,7 +5926,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 2f871b872d59b7f449c245ba1ad505e1, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 39806a1f2b541a14ca003db160023bab, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1

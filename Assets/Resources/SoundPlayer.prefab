@@ -181,9 +181,9 @@ MonoBehaviour:
   _bgmClip: {fileID: 8300000, guid: c2eb14bffa3425949b7e0363ce2b547a, type: 3}
   _endingBgmClip: {fileID: 0}
   _trueEndingBgmClip: {fileID: 8300000, guid: 986df18ba3fd9c641a8d91112527b2b2, type: 3}
-  _tapClip: {fileID: 0}
-  _deleteClip: {fileID: 0}
-  _sendClip: {fileID: 0}
+  _tapClip: {fileID: 8300000, guid: ae4c75f6d76f7c34eb6067cc81d1fb62, type: 3}
+  _deleteClip: {fileID: 8300000, guid: ae4c75f6d76f7c34eb6067cc81d1fb62, type: 3}
+  _sendClip: {fileID: 8300000, guid: ae4c75f6d76f7c34eb6067cc81d1fb62, type: 3}
   _solveClip: {fileID: 8300000, guid: c087b49f51b40ce4ba1c5d39740cc805, type: 3}
   _solveFlags: 000000000100000002000000
 --- !u!1 &7512785099528559640

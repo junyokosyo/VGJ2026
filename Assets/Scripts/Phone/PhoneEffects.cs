@@ -7,7 +7,8 @@ using UnityEngine.UI;
 /// ・起動したとき：ステータスバーがふわっと出る
 /// ・残り5%：上から「バッテリー残量が少なくなっています」の通知が出る（起動ごとに1回）
 /// ・最後の1%（残り4秒）：画面がときどきチラつく
-/// ・電源が落ちるとき：ブラウン管のように、横一本の線に縮んで白く光り、点になって消える
+/// ・電源が落ちるとき：ブラウン管のように、横一本の線に縮んで白く光り、点になって消える。
+///   縮み始めると同時に、画面の後ろを黒にする（スマホの絵の壁紙が見えないように）。次に起動するときに戻す
 /// </summary>
 public class PhoneEffects : MonoBehaviour
 {
@@ -22,6 +23,9 @@ public class PhoneEffects : MonoBehaviour
 
     [Header("電源が落ちるときに白く光らせる画像（Screen いっぱい）")]
     [SerializeField] private Image _flash;
+
+    [Header("電源が落ちるときに、画面の後ろを黒くする画像（空なら自動で作る）")]
+    [SerializeField] private Image _powerOffBackdrop;
 
     [Header("ステータスバー")]
     [SerializeField] private CanvasGroup _statusBar;
@@ -55,6 +59,13 @@ public class PhoneEffects : MonoBehaviour
 
         _screenBasePosition = _screen.anchoredPosition;
         _bannerHiddenY = _lowBatteryBanner.rect.height + 20f;
+
+        if (_powerOffBackdrop == null)
+        {
+            _powerOffBackdrop = CreateBackdrop();
+        }
+
+        _powerOffBackdrop.enabled = false;
 
         RestoreScreen();
         HideBanner();
@@ -113,6 +124,7 @@ public class PhoneEffects : MonoBehaviour
         _hasWarned = false;
         RestoreScreen();
         HideBanner();
+        _powerOffBackdrop.enabled = false;
     }
 
     /// <summary>
@@ -131,6 +143,7 @@ public class PhoneEffects : MonoBehaviour
     {
         StopFlicker();
         HideBanner();
+        _powerOffBackdrop.enabled = true;
 
         float squeeze = _crtDuration * 0.45f;
         float shrink = _crtDuration * 0.3f;
@@ -229,6 +242,29 @@ public class PhoneEffects : MonoBehaviour
         Vector2 position = _lowBatteryBanner.anchoredPosition;
         position.y = _bannerHiddenY;
         _lowBatteryBanner.anchoredPosition = position;
+    }
+
+    /// <summary>
+    /// 画面（Screen）のすぐ後ろに、同じ大きさの黒い画像を作る
+    /// </summary>
+    private Image CreateBackdrop()
+    {
+        GameObject backdropObject = new GameObject("PowerOffBackdrop", typeof(RectTransform), typeof(Image));
+        RectTransform backdrop = (RectTransform)backdropObject.transform;
+        backdrop.SetParent(_screen.parent, false);
+        backdrop.anchorMin = _screen.anchorMin;
+        backdrop.anchorMax = _screen.anchorMax;
+        backdrop.pivot = _screen.pivot;
+        backdrop.offsetMin = _screen.offsetMin;
+        backdrop.offsetMax = _screen.offsetMax;
+
+        // Screen の番号に入れると、Screen が1つ後ろにずれるので、黒い画像が Screen のすぐ奥になる
+        backdrop.SetSiblingIndex(_screen.GetSiblingIndex());
+
+        Image image = backdropObject.GetComponent<Image>();
+        image.color = Color.black;
+        image.raycastTarget = false;
+        return image;
     }
 
     /// <summary>

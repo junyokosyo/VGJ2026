@@ -34,6 +34,9 @@ public class SoundPlayer : MonoBehaviour
     [SerializeField] private AudioSource _seSource;
     [SerializeField] private AudioMixer _mixer;
 
+    [Header("BGM の大きさ（0〜1）。SE が BGM に負けないように、BGM を少し下げている")]
+    [SerializeField, Range(0f, 1f)] private float _bgmVolume = 0.45f;
+
     [Header("BGM（届いたらここに入れる）")]
     [SerializeField] private AudioClip _bgmClip;
     [SerializeField] private AudioClip _endingBgmClip;
@@ -284,7 +287,7 @@ public class SoundPlayer : MonoBehaviour
 
         _bgmSource.DOKill();
         _bgmSource.clip = clip;
-        _bgmSource.volume = 1f;
+        _bgmSource.volume = _bgmVolume;
         _bgmSource.Play();
         _isPreviewing = false;
     }
