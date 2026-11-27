@@ -119,13 +119,15 @@ public class SoundPlayer : MonoBehaviour
     }
 
     /// <summary>
-    /// エンディングの BGM を最初から鳴らす（True End は専用の曲）
+    /// エンディングの BGM を最初から鳴らす（True End は専用の曲。まだなければ、ふつうのエンディングの曲）
     /// </summary>
     public static void PlayEndingBgm(EndingType ending)
     {
         if (_instance != null)
         {
-            _instance.PlayClip(ending == EndingType.True ? _instance._trueEndingBgmClip : _instance._endingBgmClip);
+            // True End 専用の曲がまだなければ、ふつうのエンディングの曲を使う
+            AudioClip trueClip = _instance._trueEndingBgmClip != null ? _instance._trueEndingBgmClip : _instance._endingBgmClip;
+            _instance.PlayClip(ending == EndingType.True ? trueClip : _instance._endingBgmClip);
         }
     }
 
