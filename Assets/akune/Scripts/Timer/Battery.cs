@@ -1,6 +1,8 @@
 using DG.Tweening;
+using System;
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 /// <summary>
@@ -24,7 +26,13 @@ public class Battery : MonoBehaviour
     [SerializeField] private float _spentAlpha = 0.14f;
     [SerializeField] private float _fadeDuration = 0.35f;
 
+    [Header("5%以下の時のバッテリー点滅の秒数")]
+    [SerializeField] private float _blinkDuration = 0.7f;
+    [SerializeField] private float _blinkInterval = 0.3f;
+
     private int _shownPercent = -1;
+
+    private Tween _blinkTween;
 
     /// <summary>
     /// 今表示している %
@@ -57,6 +65,32 @@ public class Battery : MonoBehaviour
         {
             Refresh(percent, true);
         }
+    }
+
+    /// <summary>
+    ///Barが5本以下の時に表示%の点滅を行う
+    /// </summary>
+    public void Blink()
+    {
+        _blinkTween = DOTween.Sequence()
+            .Append(_percentText.DOFade(0f, _blinkDuration))
+            .Append(_percentText.DOFade(1f, _blinkDuration))
+            .AppendInterval(_blinkInterval)
+            .SetLoops(-1)
+            .SetLink(_percentText.gameObject);
+    }
+
+    /// <summary>
+    /// 保存されてるブリンクのTweenをKillしてAlphaを1に設定
+    /// </summary>
+    public void StopBlink()
+    {
+        _blinkTween.Kill();
+        _blinkTween = null;
+
+        var color = _percentText.color;
+        color.a = 1f;
+        _percentText.color = color;
     }
 
     /// <summary>
