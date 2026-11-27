@@ -56,6 +56,7 @@ public class PasswordPad : MonoBehaviour
         }
 
         _input += digit.ToString();
+        SoundPlayer.PlaySe(SeKind.Tap);
         Refresh();
 
         if (_input.Length == PasswordLength && !_isSendMode)
@@ -75,6 +76,7 @@ public class PasswordPad : MonoBehaviour
         }
 
         _input = _input.Substring(0, _input.Length - 1);
+        SoundPlayer.PlaySe(SeKind.Delete);
         Refresh();
     }
 
@@ -89,6 +91,7 @@ public class PasswordPad : MonoBehaviour
         }
 
         string code = _input;
+        SoundPlayer.PlaySe(SeKind.Send);
         Clear();
         _onSend?.Invoke(code);
     }

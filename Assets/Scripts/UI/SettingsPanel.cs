@@ -6,6 +6,7 @@ using UnityEngine.InputSystem;
 /// <summary>
 /// 設定画面（デモ v0.27：右上の歯車から開く）。BGM と SE の音量を変える。
 /// 変えた音量はその端末に保存し、AudioMixer（猪瀬さんの Mixer の BGM / SE）にすぐ反映する。
+/// BGM のバーを動かすと試しに BGM が鳴り（閉じると静かに止まる）、SE のバーから指を離すと SE が1回鳴る（デモと同じ）。
 /// 開く：Open（歯車ボタンの On Click () につなぐ）／閉じる：Close（×ボタン・Esc キー）。
 /// 閉じているあいだも、保存した音量をシーンの開始時に反映するため、オブジェクトは表示したまま透明にして押せなくする。
 /// プレハブ（Assets/prefab/SettingsPanel）なので、タイトル・電池切れ・記録の画面のどこにでも置ける
@@ -32,6 +33,7 @@ public class SettingsPanel : MonoBehaviour
         _canvasGroup = GetComponent<CanvasGroup>();
         _bgmSlider.OnChanged += HandleBgmChanged;
         _seSlider.OnChanged += HandleSeChanged;
+        _seSlider.OnReleased += HandleSeReleased;
         SetVisible(false);
     }
 
@@ -50,6 +52,7 @@ public class SettingsPanel : MonoBehaviour
     {
         _bgmSlider.OnChanged -= HandleBgmChanged;
         _seSlider.OnChanged -= HandleSeChanged;
+        _seSlider.OnReleased -= HandleSeReleased;
     }
 
     /// <summary>
@@ -81,6 +84,11 @@ public class SettingsPanel : MonoBehaviour
     /// </summary>
     public void Close()
     {
+        if (_isOpen)
+        {
+            SoundPlayer.EndPreview();
+        }
+
         SetVisible(false);
     }
 
@@ -102,6 +110,7 @@ public class SettingsPanel : MonoBehaviour
     private void HandleBgmChanged(float volume)
     {
         SoundSettings.SetBgmVolume(volume, _mixer);
+        SoundPlayer.PreviewBgm(volume);
     }
 
     /// <summary>
@@ -110,5 +119,13 @@ public class SettingsPanel : MonoBehaviour
     private void HandleSeChanged(float volume)
     {
         SoundSettings.SetSeVolume(volume, _mixer);
+    }
+
+    /// <summary>
+    /// SE のバーから指を離したとき：今の大きさで1回鳴らす
+    /// </summary>
+    private void HandleSeReleased()
+    {
+        SoundPlayer.PlaySe(SeKind.Tap);
     }
 }

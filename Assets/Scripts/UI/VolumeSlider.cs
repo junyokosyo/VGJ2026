@@ -6,7 +6,7 @@ using UnityEngine.EventSystems;
 /// 音量のバー（デモ v0.27 の設定画面と同じ）。枠の中を押した位置・ドラッグした位置が、そのまま音量になる。
 /// 値は 0〜1 の 5% 刻み。中のバー（_fill）の右端を、値の位置まで伸ばして表示する。0 のときはバーを隠す
 /// </summary>
-public class VolumeSlider : MonoBehaviour, IPointerDownHandler, IDragHandler
+public class VolumeSlider : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerUpHandler
 {
     [Header("押せる範囲（枠）と、伸び縮みするバー")]
     [SerializeField] private RectTransform _frame;
@@ -18,6 +18,11 @@ public class VolumeSlider : MonoBehaviour, IPointerDownHandler, IDragHandler
     /// 押した・ドラッグしたときに、新しい値（5% 刻み）を知らせる
     /// </summary>
     public event Action<float> OnChanged;
+
+    /// <summary>
+    /// 指を離したとき（SE の音量を変えたあとに、試しに1回鳴らすため）
+    /// </summary>
+    public event Action OnReleased;
 
     /// <summary>
     /// 表示を変える（保存されている値を出すときなど。OnChanged は呼ばない）
@@ -43,6 +48,14 @@ public class VolumeSlider : MonoBehaviour, IPointerDownHandler, IDragHandler
     public void OnDrag(PointerEventData eventData)
     {
         ChangeTo(eventData);
+    }
+
+    /// <summary>
+    /// 指を離したことを知らせる
+    /// </summary>
+    public void OnPointerUp(PointerEventData eventData)
+    {
+        OnReleased?.Invoke();
     }
 
     /// <summary>
