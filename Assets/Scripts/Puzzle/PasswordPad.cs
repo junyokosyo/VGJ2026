@@ -1,3 +1,4 @@
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
@@ -7,7 +8,8 @@ using UnityEngine.UI;
 /// 4桁のパスコード入力（柴田さんの DisplayPasswordText と PasswordChecker をまとめたもの）。
 /// 入力パッドごとに1つ置き、どのパスコードと比べるかをインスペクターで選ぶ。
 /// 数字ボタンは PasswordInput、消すボタンは On Click () で DeleteDigit を呼ぶ。
-/// 送信モード（妻に番号を送る入力）では答え合わせをせず、数字をそのまま表示し、送信ボタン（Send）で送る
+/// 送信モード（妻に番号を送る入力）では答え合わせをせず、数字をそのまま表示し、送信ボタン（Send）で送る。
+/// 間違えたときは ●●●● が左右に揺れてから消える（揺れているあいだは入力できない）
 /// </summary>
 public class PasswordPad : MonoBehaviour
 {
@@ -27,13 +29,19 @@ public class PasswordPad : MonoBehaviour
     [SerializeField] private Button _sendButton;
     [SerializeField] private UnityEvent<string> _onSend;
 
+    [Header("間違えたときに揺れる秒数と、揺れの大きさ")]
+    [SerializeField] private float _shakeDuration = 0.42f;
+    [SerializeField] private float _shakeStrength = 9f;
+
     private string _input = "";
+    private bool _isShaking;
 
     /// <summary>
     /// 表示されるたびに入力を消す（アプリを閉じた・電源が落ちたあとも、まっさらから）
     /// </summary>
     private void OnEnable()
     {
+        StopShake();
         Clear();
     }
 
@@ -42,7 +50,7 @@ public class PasswordPad : MonoBehaviour
     /// </summary>
     public void AddDigit(int digit)
     {
-        if (_input.Length >= PasswordLength)
+        if (_isShaking || _input.Length >= PasswordLength)
         {
             return;
         }
@@ -61,7 +69,7 @@ public class PasswordPad : MonoBehaviour
     /// </summary>
     public void DeleteDigit()
     {
-        if (_input.Length == 0)
+        if (_isShaking || _input.Length == 0)
         {
             return;
         }
@@ -95,17 +103,52 @@ public class PasswordPad : MonoBehaviour
     }
 
     /// <summary>
-    /// 答え合わせ。正解なら知らせる。どちらの場合も入力は消す（不正解の演出はあとで足す）
+    /// 答え合わせ。正解なら入力を消して知らせる。間違いなら揺らしてから消す
     /// </summary>
     private void Check()
     {
-        bool isCorrect = _input == GetCorrectPassword();
-        Clear();
-
-        if (isCorrect)
+        if (_input == GetCorrectPassword())
         {
+            Clear();
             _onCorrect?.Invoke();
+            return;
         }
+
+        Shake();
+    }
+
+    /// <summary>
+    /// ●●●● を左右に揺らし、終わったら入力を消す
+    /// </summary>
+    private void Shake()
+    {
+        _isShaking = true;
+
+        if (_display != null)
+        {
+            _display.rectTransform.DOPunchAnchorPos(new Vector2(-_shakeStrength, 0f), _shakeDuration, 10, 0.5f).SetLink(gameObject);
+        }
+
+        DOVirtual.DelayedCall(_shakeDuration, () =>
+        {
+            _isShaking = false;
+            Clear();
+        }).SetLink(gameObject).SetId(this);
+    }
+
+    /// <summary>
+    /// 揺れを止める（パッドが閉じられたときなど）
+    /// </summary>
+    private void StopShake()
+    {
+        DOTween.Kill(this);
+
+        if (_display != null)
+        {
+            _display.rectTransform.DOComplete();
+        }
+
+        _isShaking = false;
     }
 
     /// <summary>
