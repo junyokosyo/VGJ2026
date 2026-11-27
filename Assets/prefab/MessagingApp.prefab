@@ -2164,7 +2164,7 @@ MonoBehaviour:
   m_Spacing: 0
   m_ChildForceExpandWidth: 0
   m_ChildForceExpandHeight: 0
-  m_ChildControlWidth: 1
+  m_ChildControlWidth: 0
   m_ChildControlHeight: 1
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
@@ -2186,6 +2186,7 @@ MonoBehaviour:
   _text: {fileID: 4973929352691585792}
   _mineColor: {r: 1, g: 0.61, b: 0.91, a: 1}
   _theirColor: {r: 0.92, g: 0.92, b: 0.94, a: 1}
+  _maxTextWidth: 440
 --- !u!1 &2509660962138296832
 GameObject:
   m_ObjectHideFlags: 0
@@ -5632,6 +5633,7 @@ GameObject:
   - component: {fileID: 1494825134645924099}
   - component: {fileID: 684038004815466600}
   - component: {fileID: 1209131979384001907}
+  - component: {fileID: 5770051569666997259}
   m_Layer: 5
   m_Name: Bubble
   m_TagString: Untagged
@@ -5736,13 +5738,27 @@ MonoBehaviour:
     m_Bottom: 12
   m_ChildAlignment: 0
   m_Spacing: 0
-  m_ChildForceExpandWidth: 1
-  m_ChildForceExpandHeight: 1
+  m_ChildForceExpandWidth: 0
+  m_ChildForceExpandHeight: 0
   m_ChildControlWidth: 1
   m_ChildControlHeight: 1
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!114 &5770051569666997259
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5167946162366879107}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3245ec927659c4140ac4f8d17403cc18, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.ContentSizeFitter
+  m_HorizontalFit: 0
+  m_VerticalFit: 2
 --- !u!1 &5216832510128176072
 GameObject:
   m_ObjectHideFlags: 0
