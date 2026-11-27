@@ -178,13 +178,13 @@ MonoBehaviour:
   _bgmSource: {fileID: 225098564397823508}
   _seSource: {fileID: 2420378773838831901}
   _mixer: {fileID: 24100000, guid: eca9c59236fb3f849821494a361e24ff, type: 2}
-  _bgmClip: {fileID: 8300000, guid: 7cee3c2fb43c4fe4ba8e681e1297038b, type: 3}
+  _bgmClip: {fileID: 8300000, guid: c2eb14bffa3425949b7e0363ce2b547a, type: 3}
   _endingBgmClip: {fileID: 0}
-  _trueEndingBgmClip: {fileID: 0}
+  _trueEndingBgmClip: {fileID: 8300000, guid: 986df18ba3fd9c641a8d91112527b2b2, type: 3}
   _tapClip: {fileID: 0}
   _deleteClip: {fileID: 0}
   _sendClip: {fileID: 0}
-  _solveClip: {fileID: 8300000, guid: ecafb2925559d9240956613d5b50f03b, type: 3}
+  _solveClip: {fileID: 8300000, guid: c087b49f51b40ce4ba1c5d39740cc805, type: 3}
   _solveFlags: 000000000100000002000000
 --- !u!1 &7512785099528559640
 GameObject:

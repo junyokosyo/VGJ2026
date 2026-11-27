@@ -34,8 +34,18 @@ MonoBehaviour:
   - ImageSprite: {fileID: 0}
     ID: 0
   confirmedSprites:
-  - Month: 1
-    Sprite: []
+  - Month: 9
+    Sprite:
+    - {fileID: 21300000, guid: 840833e89279a334796080cf815ec6cf, type: 3}
+  - Month: 10
+    Sprite:
+    - {fileID: 21300000, guid: 466ad9eae7b22604198e1de80a2375ca, type: 3}
+  - Month: 11
+    Sprite:
+    - {fileID: 21300000, guid: a8c92711e6f1ee04592e6d97ba1edf16, type: 3}
+  - Month: 12
+    Sprite:
+    - {fileID: 21300000, guid: 3f1496d322a6da949be33ace7ec0b561, type: 3}
   Messages:
   - Month: 9
     Story: "\u3072\u306A\u3068\u516C\u5712\u3092\u6B69\u3044\u305F\u3002\u307E\u3060\u4E00\u7DD2\u306B\u9060\u304F\u307E\u3067\u884C\u3051\u305F\u3002"
