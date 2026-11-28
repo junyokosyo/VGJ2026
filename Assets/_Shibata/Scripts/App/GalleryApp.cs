@@ -1,11 +1,12 @@
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
 /// Gallery アプリ（柴田さんのものを、抽選結果を GameProgress から読む形に変更）。
 /// 開くたびに、9〜12月それぞれ抽選された枚数ぶん写真を並べ直す。
-/// ・小さい写真は正方形に切り抜いて並べる（縦長・横長の写真でも余白が出ない）
+/// ・小さい写真は正方形に切り抜いて、角を丸めて並べる（iPhone の写真アプリ風。左上に「18日」のような日付）
 /// ・写真を押すと、拡大画面（GalleryViewer）で大きく見られる
 /// ・写真の並べ方（デモ v0.27 と同じ考え方）：
 ///   「話に関わる写真」（AnswerDatabase の confirmedSprites に月ごとに登録。各月2枚まで）を入れ、
@@ -44,6 +45,17 @@ public class GalleryApp : AppBase
 
     [Header("小さい写真の後ろの色（写真がないときに見える）")]
     [SerializeField] private Color _thumbnailBackColor = new Color32(0x1b, 0x1e, 0x26, 0xff);
+
+    [Header("小さい写真の角を丸める絵（9スライスの白い角丸。空なら四角のまま）")]
+    [SerializeField] private Sprite _tileSprite;
+
+    [Header("月の見出し（「9月」など）の文字の色。Gallery の背景が白いので、黒っぽい色にする")]
+    [SerializeField] private Color _monthLabelColor = new Color32(0x1c, 0x1c, 0x1e, 0xff);
+
+    [Header("小さい写真の左上の日付（文字の大きさ・アウトラインの太さ（ピクセル）・アウトラインの色）")]
+    [SerializeField] private float _dayFontSize = 22f;
+    [SerializeField, Range(0f, 4f)] private float _dayOutlinePixels = 1.6f;
+    [SerializeField] private Color _dayOutlineColor = new Color32(0, 0, 0, 220);
 
     private const int MaxStoryPhotos = 2;
 
@@ -86,14 +98,27 @@ public class GalleryApp : AppBase
 
             ClearChildren(parents[i]);
 
-            foreach (PhotoSlot slot in MakeMonthSlots(month, count, random, poolBag))
+            List<PhotoSlot> slots = MakeMonthSlots(month, count, random, poolBag);
+            List<int> days = MakeDays(month, slots.Count);
+
+            for (int j = 0; j < slots.Count; j++)
             {
-                CreatePhoto(parents[i], slot.Sprite, _photos.Count);
+                PhotoSlot slot = slots[j];
+                CreatePhoto(parents[i], slot.Sprite, _photos.Count, days[j]);
 
                 _photos.Add(slot.Sprite);
                 _photoMonths.Add(month);
                 _photoCaptions.Add(slot.IsStory ? caption : string.Empty);
             }
+
+            FitGridHeight(parents[i], slots.Count);
+            ShowMonthLabel(parents[i], month);
+        }
+
+        // 写真を入れたあとで並びを計算し直す（月の見出しが写真に隠れないように）
+        if (_septemberparent.parent != null && _septemberparent.parent.parent is RectTransform months)
+        {
+            LayoutRebuilder.ForceRebuildLayoutImmediate(months);
         }
 
         if (_viewer != null)
@@ -104,15 +129,26 @@ public class GalleryApp : AppBase
 
     /// <summary>
     /// 小さい写真を1枚作る。枠（プレハブの Image）の中に写真を入れて、はみ出す分を切る（正方形に切り抜く）。
+    /// 角丸の絵があれば、Mask で角を丸く切る（RectMask2D は四角にしか切れない）。左上に日付を出す。
     /// 押すと、拡大画面で index 番目の写真を開く
     /// </summary>
-    private void CreatePhoto(Transform parent, Sprite sprite, int index)
+    private void CreatePhoto(Transform parent, Sprite sprite, int index, int day)
     {
         GameObject photo = Instantiate(_gallery, parent);
         Image frame = photo.GetComponent<Image>();
-        frame.sprite = null;
         frame.color = _thumbnailBackColor;
-        photo.AddComponent<RectMask2D>();
+
+        if (_tileSprite != null)
+        {
+            frame.sprite = _tileSprite;
+            frame.type = Image.Type.Sliced;
+            photo.AddComponent<Mask>().showMaskGraphic = true;
+        }
+        else
+        {
+            frame.sprite = null;
+            photo.AddComponent<RectMask2D>();
+        }
 
         if (sprite != null)
         {
@@ -129,6 +165,8 @@ public class GalleryApp : AppBase
             fitter.aspectRatio = sprite.rect.width / sprite.rect.height;
         }
 
+        CreateDayLabel(photo.transform, day);
+
         if (_viewer == null)
         {
             return;
@@ -138,6 +176,135 @@ public class GalleryApp : AppBase
         Button button = photo.AddComponent<Button>();
         button.targetGraphic = frame;
         button.onClick.AddListener(() => _viewer.Open(index));
+    }
+
+    /// <summary>
+    /// 月の見出し（写真の並ぶ場所と同じ親の「Label」）に「9月」を出し、高さを確保する
+    /// </summary>
+    private void ShowMonthLabel(Transform parent, int month)
+    {
+        Transform label = parent.parent != null ? parent.parent.Find("Label") : null;
+
+        if (label == null || !label.TryGetComponent(out TextMeshProUGUI text))
+        {
+            return;
+        }
+
+        label.gameObject.SetActive(true);
+        text.enabled = true;
+        text.text = $"{month}月";
+        text.color = _monthLabelColor;
+        text.fontStyle = FontStyles.Bold;
+        text.alignment = TextAlignmentOptions.BottomLeft;
+
+        if (!label.TryGetComponent(out LayoutElement element))
+        {
+            element = label.gameObject.AddComponent<LayoutElement>();
+        }
+
+        element.minHeight = Mathf.Max(element.minHeight, 46f);
+        element.preferredHeight = Mathf.Max(element.preferredHeight, 46f);
+    }
+
+    /// <summary>
+    /// 写真の並ぶ場所（GridLayoutGroup）の高さを、写真の段の数に合わせる。
+    /// 高さが 0 のままだと、写真が下にはみ出して、次の月の見出しの上にかぶさってしまう
+    /// </summary>
+    private static void FitGridHeight(Transform parent, int count)
+    {
+        if (!parent.TryGetComponent(out GridLayoutGroup grid))
+        {
+            return;
+        }
+
+        int columns = grid.constraint == GridLayoutGroup.Constraint.FixedColumnCount ? Mathf.Max(1, grid.constraintCount) : 3;
+        int rows = Mathf.CeilToInt(count / (float)columns);
+        float height = rows * grid.cellSize.y + Mathf.Max(0, rows - 1) * grid.spacing.y + grid.padding.vertical;
+
+        if (!parent.TryGetComponent(out LayoutElement element))
+        {
+            element = parent.gameObject.AddComponent<LayoutElement>();
+        }
+
+        element.minHeight = height;
+        element.preferredHeight = height;
+    }
+
+    /// <summary>
+    /// 小さい写真の左上に「18日」のような日付を出す（白い文字に黒いアウトライン。明るい写真でも読める）。
+    /// アウトラインは、黒い同じ文字を8方向に少しずつずらして後ろに重ねて作る
+    /// （TextMeshPro のマテリアルのアウトラインは、フォントや切り抜きの設定によって出ないことがあるため）
+    /// </summary>
+    private void CreateDayLabel(Transform photo, int day)
+    {
+        GameObject dayObject = new GameObject("Day", typeof(RectTransform));
+        RectTransform rect = (RectTransform)dayObject.transform;
+        rect.SetParent(photo, false);
+        rect.anchorMin = new Vector2(0f, 1f);
+        rect.anchorMax = new Vector2(1f, 1f);
+        rect.pivot = new Vector2(0f, 1f);
+        rect.offsetMin = new Vector2(10f, -40f);
+        rect.offsetMax = new Vector2(-6f, -6f);
+
+        string text = $"{day}日";
+
+        for (int i = 0; i < 8; i++)
+        {
+            float angle = i * Mathf.PI / 4f;
+            Vector2 offset = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * _dayOutlinePixels;
+            CreateDayText(rect, text, _dayOutlineColor, offset);
+        }
+
+        CreateDayText(rect, text, Color.white, Vector2.zero);
+    }
+
+    /// <summary>
+    /// 日付の文字を1枚作る（offset だけずらす）
+    /// </summary>
+    private void CreateDayText(RectTransform parent, string text, Color color, Vector2 offset)
+    {
+        GameObject labelObject = new GameObject("Text", typeof(RectTransform), typeof(TextMeshProUGUI));
+        RectTransform rect = (RectTransform)labelObject.transform;
+        rect.SetParent(parent, false);
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.one;
+        rect.offsetMin = offset;
+        rect.offsetMax = offset;
+
+        TextMeshProUGUI label = labelObject.GetComponent<TextMeshProUGUI>();
+        label.text = text;
+        label.fontSize = _dayFontSize;
+        label.fontStyle = FontStyles.Bold;
+        label.color = color;
+        label.alignment = TextAlignmentOptions.TopLeft;
+        label.raycastTarget = false;
+    }
+
+    /// <summary>
+    /// その月の写真の日付を、count 個（重ならない・小さい順）決める。
+    /// 暗証番号と月から決めるので、開き直しても・再起動しても同じ
+    /// </summary>
+    private static List<int> MakeDays(int month, int count)
+    {
+        int daysInMonth = System.DateTime.DaysInMonth(2026, month);
+        System.Random random = new System.Random(GetLayoutSeed() + month * 97);
+        List<int> all = new();
+
+        for (int day = 1; day <= daysInMonth; day++)
+        {
+            all.Add(day);
+        }
+
+        Shuffle(all, random);
+        List<int> days = all.GetRange(0, Mathf.Min(count, all.Count));
+        days.Sort();
+
+        while (days.Count < count)
+        {
+            days.Add(daysInMonth);
+        }
+
+        return days;
     }
 
     /// <summary>
