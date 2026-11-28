@@ -144,3 +144,10 @@ crashlytics-build.properties
 # Designer art (Google Drive). Shared outside git: public repo, large files, photos
 /[Aa]ssets/[Aa]rt/
 /[Aa]ssets/[Aa]rt.meta
+
+# 自分用のエディタツール（Tools → NoSubject）。ゲームの動きには使わない
+/[Aa]ssets/[Ee]ditor/
+/[Aa]ssets/[Ee]ditor.meta
+
+# UI 点検ツールの結果
+/UIAudit.txt
