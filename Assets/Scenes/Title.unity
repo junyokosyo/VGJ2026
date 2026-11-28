@@ -2069,14 +2069,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.050980393, g: 0.0627451, b: 0.09019608, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: 581ae8eedabbef7409c6085728cb4fc3, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -3801,10 +3801,30 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1748408855}
     m_Modifications:
+    - target: {fileID: 3835344071886442047, guid: 4eda4272baf32d84a8d44fd33950926c, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 7e69a466fdc1b984c8345fd02c42339d, type: 3}
+    - target: {fileID: 3835344071886442047, guid: 4eda4272baf32d84a8d44fd33950926c, type: 3}
+      propertyPath: m_Color.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3835344071886442047, guid: 4eda4272baf32d84a8d44fd33950926c, type: 3}
+      propertyPath: m_Color.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3835344071886442047, guid: 4eda4272baf32d84a8d44fd33950926c, type: 3}
+      propertyPath: m_Color.r
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5429557352953281180, guid: 4eda4272baf32d84a8d44fd33950926c, type: 3}
       propertyPath: m_Name
       value: SettingsPanel
       objectReference: {fileID: 0}
+    - target: {fileID: 7310659772356674776, guid: 4eda4272baf32d84a8d44fd33950926c, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 7e69a466fdc1b984c8345fd02c42339d, type: 3}
     - target: {fileID: 7763554201990980857, guid: 4eda4272baf32d84a8d44fd33950926c, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5

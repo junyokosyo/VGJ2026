@@ -1,5 +1,5 @@
 /// <summary>
-/// 効果音（SE）の種類（デモ v0.27 と同じ3つ）
+/// 効果音（SE）の種類
 /// </summary>
 public enum SeKind
 {
@@ -11,4 +11,7 @@ public enum SeKind
 
     /// <summary>番号を送った</summary>
     Send,
+
+    /// <summary>謎が解けた（Memo のロック解除など）</summary>
+    Solve,
 }

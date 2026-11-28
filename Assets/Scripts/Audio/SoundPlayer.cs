@@ -12,8 +12,11 @@ using UnityEngine.SceneManagement;
 /// ・タイトル：無音（タイトルに戻ったら静かに消す）
 /// ・起動したとき（「もう一度起動する」も）：最初から鳴り始める
 /// ・電池0%：余韻なしで、ぷつんと止まる
-/// ・True End：止めずに鳴り続ける（Result シーンに移っても切らない）
-/// ・Memo End・Normal End：3秒かけて消える
+/// ・エンディングに入ったら：3秒かけて消える（どのエンディングも）
+/// ・Result：True End 以外は、エンディングの BGM を鳴らす
+///           True End は手紙を開くまで無音。開いたら True End 専用の BGM（ResultController から呼ぶ）
+///
+/// 謎が解けたとき（Solve Flags のフラグが立ったとき）は、謎が解けた SE を鳴らす
 /// ・「スマートフォンを閉じる」：2秒かけて消える（その画面から SoundPlayer.FadeOutBgm(2f) を呼ぶ）
 ///
 /// 音のファイルは、プレハブの枠（Bgm Clip・Tap Clip など）に入れるだけ。空なら鳴らないだけで、エラーにはならない
@@ -31,13 +34,27 @@ public class SoundPlayer : MonoBehaviour
     [SerializeField] private AudioSource _seSource;
     [SerializeField] private AudioMixer _mixer;
 
+    [Header("BGM の大きさ（0〜1）。SE が BGM に負けないように、BGM を少し下げている")]
+    [SerializeField, Range(0f, 1f)] private float _bgmVolume = 0.45f;
+
     [Header("BGM（届いたらここに入れる）")]
     [SerializeField] private AudioClip _bgmClip;
+    [SerializeField] private AudioClip _endingBgmClip;
+    [SerializeField] private AudioClip _trueEndingBgmClip;
 
     [Header("SE（届いたらここに入れる）")]
     [SerializeField] private AudioClip _tapClip;
     [SerializeField] private AudioClip _deleteClip;
     [SerializeField] private AudioClip _sendClip;
+    [SerializeField] private AudioClip _solveClip;
+
+    [Header("このフラグが立ったら「謎が解けた」SE を鳴らす")]
+    [SerializeField] private ProgressFlag[] _solveFlags =
+    {
+        ProgressFlag.MemoUnlocked,
+        ProgressFlag.HiddenHistoryUnlocked,
+        ProgressFlag.LetterNumberFound,
+    };
 
     private static SoundPlayer _instance;
 
@@ -70,6 +87,7 @@ public class SoundPlayer : MonoBehaviour
     {
         _instance = this;
         SceneManager.sceneLoaded += HandleSceneLoaded;
+        GameProgress.OnFlagSet += HandleFlagSet;
     }
 
     /// <summary>
@@ -86,6 +104,7 @@ public class SoundPlayer : MonoBehaviour
     private void OnDestroy()
     {
         SceneManager.sceneLoaded -= HandleSceneLoaded;
+        GameProgress.OnFlagSet -= HandleFlagSet;
         UnwatchGameManager();
     }
 
@@ -96,17 +115,23 @@ public class SoundPlayer : MonoBehaviour
     /// </summary>
     public static void PlayBgm()
     {
-        if (_instance == null || _instance._bgmClip == null)
+        if (_instance != null)
         {
-            return;
+            _instance.PlayClip(_instance._bgmClip);
         }
+    }
 
-        AudioSource source = _instance._bgmSource;
-        source.DOKill();
-        source.clip = _instance._bgmClip;
-        source.volume = 1f;
-        source.Play();
-        _instance._isPreviewing = false;
+    /// <summary>
+    /// エンディングの BGM を最初から鳴らす（True End は専用の曲。まだなければ、ふつうのエンディングの曲）
+    /// </summary>
+    public static void PlayEndingBgm(EndingType ending)
+    {
+        if (_instance != null)
+        {
+            // True End 専用の曲がまだなければ、ふつうのエンディングの曲を使う
+            AudioClip trueClip = _instance._trueEndingBgmClip != null ? _instance._trueEndingBgmClip : _instance._endingBgmClip;
+            _instance.PlayClip(ending == EndingType.True ? trueClip : _instance._endingBgmClip);
+        }
     }
 
     /// <summary>
@@ -232,14 +257,39 @@ public class SoundPlayer : MonoBehaviour
     }
 
     /// <summary>
-    /// エンディングに入ったとき：True End は鳴らし続け、ほかは3秒で消す
+    /// エンディングに入ったとき：どのエンディングも3秒で消す（Result で、エンディングの BGM に替わる）
     /// </summary>
     private void HandleGameEnded(EndingType ending)
     {
-        if (ending != EndingType.True)
+        FadeOutBgm(EndingFadeSeconds);
+    }
+
+    /// <summary>
+    /// フラグが立ったとき：謎が解けたフラグなら SE を鳴らす
+    /// </summary>
+    private void HandleFlagSet(ProgressFlag flag)
+    {
+        if (System.Array.IndexOf(_solveFlags, flag) >= 0)
         {
-            FadeOutBgm(EndingFadeSeconds);
+            PlaySe(SeKind.Solve);
         }
+    }
+
+    /// <summary>
+    /// BGM の場所で、曲を最初から鳴らす（曲が空なら何もしない）
+    /// </summary>
+    private void PlayClip(AudioClip clip)
+    {
+        if (clip == null)
+        {
+            return;
+        }
+
+        _bgmSource.DOKill();
+        _bgmSource.clip = clip;
+        _bgmSource.volume = _bgmVolume;
+        _bgmSource.Play();
+        _isPreviewing = false;
     }
 
     /// <summary>
@@ -253,6 +303,8 @@ public class SoundPlayer : MonoBehaviour
                 return _deleteClip;
             case SeKind.Send:
                 return _sendClip;
+            case SeKind.Solve:
+                return _solveClip;
             default:
                 return _tapClip;
         }
